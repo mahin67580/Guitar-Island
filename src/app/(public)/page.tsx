@@ -8,9 +8,17 @@ import WhyGuitarIsland from "@/components/public/home/WhyGuitarIsland";
 import LatestBlogPosts from "@/components/public/home/LatestBlogPosts";
 import UpcomingPreview from "@/components/public/home/UpcomingPreview";
 import VisitStore from "@/components/public/home/VisitStore";
+import { createClient } from "@/lib/supabase/server";
+import type { Category } from "@/lib/types";
 
 export default async function HomePage() {
   const settings = await getStoreSettings();
+  const supabase = await createClient();
+const { data: categoriesData } = await supabase
+  .from("categories")
+  .select("*")
+  .order("sort_order", { ascending: true });
+const categories: Category[] = categoriesData ?? [];
   return (
     <>
       {/* HERO */}
@@ -78,7 +86,7 @@ export default async function HomePage() {
 
       {/* SECTIONS */}
       <FeaturedProducts />
-      <CategoriesSection />
+      <CategoriesSection categories={categories || []} />
       <WhyGuitarIsland />
       <LatestBlogPosts />
       <UpcomingPreview />
