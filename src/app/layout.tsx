@@ -58,6 +58,21 @@ export default function RootLayout({
       <body className="font-sans antialiased">
         {children}
         <Toaster richColors position="top-center" />
+        <script
+  type="application/ld+json"
+  dangerouslySetInnerHTML={{
+    __html: JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "MusicStore",
+      name: "Guitar Island",
+      description:
+        "Handpicked guitars, amps, and accessories. Visit our shop to try before you buy.",
+      image: `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/og-image.png`,
+      url: process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
+      priceRange: "৳৳",
+    }),
+  }}
+/>
       </body>
     </html>
   );
