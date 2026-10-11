@@ -50,8 +50,7 @@ export default function EnquiriesTrendChart({ data }: Props) {
               border: "1px solid rgba(0,0,0,0.05)",
               fontSize: 12,
             }}
-            formatter={(value: number) => [`${value} enquiries`, ""]}
-            labelFormatter={(label) => label}
+            formatter={(value) => [`${value ?? 0} enquiries`, ""]}
           />
           <Area
             type="monotone"

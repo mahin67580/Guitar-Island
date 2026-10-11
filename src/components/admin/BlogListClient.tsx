@@ -1,230 +1,158 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
+import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Loader2, Save } from "lucide-react";
+import { format } from "date-fns";
+import { Edit, Eye, EyeOff, ImageIcon, Newspaper, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import ImageUploader from "@/components/admin/ImageUploader";
+import { Badge } from "@/components/ui/badge";
 import {
-  createBlogPost,
-  updateBlogPost,
-  type BlogInput,
-} from "@/lib/admin/blog-actions";
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { deleteBlogPost } from "@/lib/admin/blog-actions";
 import type { BlogPost } from "@/lib/types";
 
-type Props = { initialPost?: BlogPost };
+type Props = {
+  posts: BlogPost[];
+};
 
-export default function BlogForm({ initialPost }: Props) {
+export default function BlogListClient({ posts }: Props) {
   const router = useRouter();
-  const [submitting, setSubmitting] = useState(false);
-  const [cover, setCover] = useState<string[]>(
-    initialPost?.cover_image ? [initialPost.cover_image] : []
-  );
-  const [form, setForm] = useState<Omit<BlogInput, "cover_image">>({
-    title: initialPost?.title || "",
-    slug: initialPost?.slug || "",
-    excerpt: initialPost?.excerpt || "",
-    content: initialPost?.content || "",
-    category: initialPost?.category || "",
-    tags: initialPost?.tags || [],
-    is_published: initialPost?.is_published ?? false,
-    meta_title: initialPost?.meta_title || "",
-    meta_description: initialPost?.meta_description || "",
-    author: initialPost?.author || "",
-  });
-  const [tagsInput, setTagsInput] = useState(
-    (initialPost?.tags || []).join(", ")
-  );
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [, startTransition] = useTransition();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!form.title.trim()) return toast.error("Title is required");
-    setSubmitting(true);
-
-    const tags = tagsInput
-      .split(",")
-      .map((t) => t.trim())
-      .filter(Boolean);
-
-    const payload: BlogInput = {
-      ...form,
-      tags,
-      cover_image: cover[0] || null,
-    };
-
-    const res = initialPost
-      ? await updateBlogPost(initialPost.id, payload)
-      : await createBlogPost(payload);
-
-    setSubmitting(false);
-    if (res.error) return toast.error(res.error);
-    toast.success(initialPost ? "Post updated" : "Post created");
-    router.push("/admin/blog");
-    router.refresh();
+  const handleDelete = async () => {
+    if (!deleteId) return;
+    const res = await deleteBlogPost(deleteId);
+    setDeleteId(null);
+    if ("error" in res && res.error) {
+      toast.error(res.error);
+      return;
+    }
+    toast.success("Post deleted");
+    startTransition(() => router.refresh());
   };
 
-  return (
-    <form onSubmit={handleSubmit} className="space-y-6 max-w-4xl">
-      <Card>
-        <CardHeader>
-          <CardTitle className="font-display">Post Content</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <Label>Title *</Label>
-            <Input
-              value={form.title}
-              onChange={(e) => setForm({ ...form, title: e.target.value })}
-              placeholder="e.g. 5 Tips for Choosing Your First Electric Guitar"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label>Slug (optional)</Label>
-              <Input
-                value={form.slug || ""}
-                onChange={(e) => setForm({ ...form, slug: e.target.value })}
-                placeholder="auto from title"
-              />
-            </div>
-            <div>
-              <Label>Category</Label>
-              <Input
-                value={form.category || ""}
-                onChange={(e) =>
-                  setForm({ ...form, category: e.target.value })
-                }
-                placeholder="e.g. Guides, Reviews"
-              />
-            </div>
-          </div>
-
-          <div>
-            <Label>Excerpt</Label>
-            <Textarea
-              value={form.excerpt || ""}
-              onChange={(e) => setForm({ ...form, excerpt: e.target.value })}
-              rows={2}
-              placeholder="Short summary shown in the blog list"
-            />
-          </div>
-
-          <div>
-            <Label>Content</Label>
-            <Textarea
-              value={form.content || ""}
-              onChange={(e) => setForm({ ...form, content: e.target.value })}
-              rows={12}
-              placeholder="Write your post here. Separate paragraphs with a blank line."
-              className="font-mono text-sm"
-            />
-            <p className="text-xs text-ink/50 mt-1">
-              Tip: press Enter twice between paragraphs
-            </p>
-          </div>
-
-          <div>
-            <Label>Cover Image</Label>
-            <ImageUploader
-              bucket="blogs"
-              value={cover}
-              onChange={setCover}
-              maxImages={1}
-            />
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="font-display">Details</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label>Author</Label>
-              <Input
-                value={form.author || ""}
-                onChange={(e) => setForm({ ...form, author: e.target.value })}
-                placeholder="e.g. Guitar Island Team"
-              />
-            </div>
-            <div>
-              <Label>Tags</Label>
-              <Input
-                value={tagsInput}
-                onChange={(e) => setTagsInput(e.target.value)}
-                placeholder="Comma separated"
-              />
-            </div>
-          </div>
-
-          <div>
-            <Label>Meta Title (SEO)</Label>
-            <Input
-              value={form.meta_title || ""}
-              onChange={(e) =>
-                setForm({ ...form, meta_title: e.target.value })
-              }
-              placeholder="Defaults to post title"
-            />
-          </div>
-
-          <div>
-            <Label>Meta Description (SEO)</Label>
-            <Textarea
-              value={form.meta_description || ""}
-              onChange={(e) =>
-                setForm({ ...form, meta_description: e.target.value })
-              }
-              rows={2}
-              placeholder="Defaults to excerpt"
-            />
-          </div>
-
-          <div className="flex items-center justify-between rounded-lg border border-black/5 p-4">
-            <div>
-              <Label className="text-base">Publish</Label>
-              <p className="text-xs text-ink/50">
-                Make visible on the public blog
-              </p>
-            </div>
-            <Switch
-              checked={form.is_published}
-              onCheckedChange={(c) => setForm({ ...form, is_published: c })}
-            />
-          </div>
-        </CardContent>
-      </Card>
-
-      <div className="flex gap-3">
-        <Button
-          type="submit"
-          disabled={submitting}
-          className="bg-brass hover:bg-brass/90 text-ink font-semibold"
-        >
-          {submitting ? (
-            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-          ) : (
-            <Save className="w-4 h-4 mr-2" />
-          )}
-          {initialPost ? "Save Changes" : "Create Post"}
-        </Button>
-        <Button
-          type="button"
-          variant="ghost"
-          onClick={() => router.push("/admin/blog")}
-        >
-          Cancel
+  if (posts.length === 0) {
+    return (
+      <div className="text-center py-16 rounded-xl bg-cream/50">
+        <Newspaper className="w-12 h-12 mx-auto mb-3 text-ink/20" />
+        <p className="text-ink/60 mb-4">No posts yet.</p>
+        <Button asChild className="bg-brass hover:bg-brass/90 text-ink">
+          <Link href="/admin/blog/new">Write your first post</Link>
         </Button>
       </div>
-    </form>
+    );
+  }
+
+  return (
+    <>
+      <div className="space-y-3">
+        {posts.map((post) => (
+          <div
+            key={post.id}
+            className="flex items-center gap-4 p-4 rounded-xl border border-black/5 bg-white"
+          >
+            <div className="relative w-20 h-20 rounded-lg overflow-hidden bg-cream/50 border border-black/5 shrink-0">
+              {post.cover_image ? (
+                <Image
+                  src={post.cover_image}
+                  alt={post.title}
+                  fill
+                  sizes="80px"
+                  className="object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-ink/20">
+                  <ImageIcon className="w-6 h-6" />
+                </div>
+              )}
+            </div>
+
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-1 flex-wrap">
+                <p className="font-medium text-ink line-clamp-1">
+                  {post.title}
+                </p>
+                {post.is_published ? (
+                  <Badge variant="secondary" className="text-[10px]">
+                    <Eye className="w-3 h-3 mr-1" />
+                    Published
+                  </Badge>
+                ) : (
+                  <Badge variant="outline" className="text-[10px]">
+                    <EyeOff className="w-3 h-3 mr-1" />
+                    Draft
+                  </Badge>
+                )}
+                {post.category && (
+                  <Badge variant="outline" className="text-[10px]">
+                    {post.category}
+                  </Badge>
+                )}
+              </div>
+              <p className="text-xs text-ink/50">
+                {format(new Date(post.created_at), "MMM d, yyyy")}
+                {post.author && ` · ${post.author}`}
+              </p>
+              {post.excerpt && (
+                <p className="text-sm text-ink/60 line-clamp-1 mt-1">
+                  {post.excerpt}
+                </p>
+              )}
+            </div>
+
+            <div className="flex gap-1">
+              <Button asChild variant="ghost" size="icon">
+                <Link href={`/admin/blog/${post.id}/edit`}>
+                  <Edit className="w-4 h-4" />
+                </Link>
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setDeleteId(post.id)}
+                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <AlertDialog
+        open={!!deleteId}
+        onOpenChange={(o) => !o && setDeleteId(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this post?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }

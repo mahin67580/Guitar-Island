@@ -29,47 +29,54 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import ImageUploader from "@/components/admin/ImageUploader";
-import {
-  createProduct,
-  updateProduct,
-} from "@/lib/admin/products";
+import { createProduct, updateProduct } from "@/lib/admin/products";
 import type { Category, Product } from "@/lib/types";
 
 const schema = z.object({
   name: z.string().min(2, "Name is required").max(200),
-  slug: z.string().max(200).optional(),
-  sku: z.string().max(100).optional(),
+  slug: z.string().optional(),
+  sku: z.string().optional(),
   category_id: z.string().optional(),
-  brand: z.string().max(100).optional(),
+  brand: z.string().optional(),
   price: z.coerce.number().min(0, "Price must be 0 or more"),
-  discount_price: z.coerce.number().min(0).optional().nullable(),
+  discount_price: z
+    .union([z.coerce.number().min(0), z.null(), z.literal("")])
+    .optional(),
   quantity: z.coerce.number().int().min(0),
-  low_stock_threshold: z.coerce.number().int().min(0).default(3),
-  condition: z.enum(["New", "Used"]).default("New"),
-  status: z.enum(["active", "draft", "sold_out"]).default("active"),
-  short_description: z.string().max(300).optional(),
-  description: z.string().max(5000).optional(),
-  specs: z
-    .array(
-      z.object({
-        key: z.string(),
-        value: z.string(),
-      })
-    )
-    .default([]),
-  images: z.array(z.string()).default([]),
-  tags: z.string().optional(), // comma-separated
-  is_featured: z.boolean().default(false),
+  low_stock_threshold: z.coerce.number().int().min(0),
+  condition: z.enum(["New", "Used"]),
+  status: z.enum(["active", "draft", "sold_out"]),
+  short_description: z.string().optional(),
+  description: z.string().optional(),
+  specs: z.array(
+    z.object({
+      key: z.string(),
+      value: z.string(),
+    })
+  ),
+  images: z.array(z.string()),
+  tags: z.string().optional(),
+  is_featured: z.boolean(),
 });
 
-type FormValues = z.infer<typeof schema>;
+type FormValues = z.input<typeof schema>;
+type FormOutput = z.output<typeof schema>;
 
 type Props = {
   categories: Category[];
   initialProduct?: Product;
+  prefill?: {
+    name?: string;
+    brand?: string;
+    description?: string;
+  };
 };
 
-export default function ProductForm({ categories, initialProduct }: Props) {
+export default function ProductForm({
+  categories,
+  initialProduct,
+  prefill,
+}: Props) {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const isEdit = !!initialProduct;
@@ -77,27 +84,27 @@ export default function ProductForm({ categories, initialProduct }: Props) {
   const defaultSpecs = initialProduct?.specs
     ? Object.entries(initialProduct.specs).map(([key, value]) => ({
         key,
-        value,
+        value: String(value),
       }))
     : [];
 
-  const form = useForm<FormValues>({
-    resolver: zodResolver(schema),
+  const form = useForm<FormValues, any, FormOutput>({
+    resolver: zodResolver(schema) as any,
     defaultValues: {
-      name: initialProduct?.name ?? "",
+      name: initialProduct?.name ?? prefill?.name ?? "",
       slug: initialProduct?.slug ?? "",
       sku: initialProduct?.sku ?? "",
       category_id: initialProduct?.category_id ?? "",
-      brand: initialProduct?.brand ?? "",
+      brand: initialProduct?.brand ?? prefill?.brand ?? "",
       price: initialProduct?.price ?? 0,
       discount_price: initialProduct?.discount_price ?? null,
       quantity: initialProduct?.quantity ?? 0,
       low_stock_threshold: initialProduct?.low_stock_threshold ?? 3,
       condition: (initialProduct?.condition as "New" | "Used") ?? "New",
       status:
-        (initialProduct?.status as "active" | "draft" | "sold_out") ?? "active",
+        (initialProduct?.status as "active" | "draft" | "sold_out") ?? "draft",
       short_description: initialProduct?.short_description ?? "",
-      description: initialProduct?.description ?? "",
+      description: initialProduct?.description ?? prefill?.description ?? "",
       specs: defaultSpecs,
       images: initialProduct?.images ?? [],
       tags: initialProduct?.tags?.join(", ") ?? "",
@@ -110,7 +117,7 @@ export default function ProductForm({ categories, initialProduct }: Props) {
     name: "specs",
   });
 
-  const onSubmit = async (values: FormValues) => {
+  const onSubmit = async (values: FormOutput) => {
     setSubmitting(true);
 
     // Convert specs array → object
@@ -134,7 +141,12 @@ export default function ProductForm({ categories, initialProduct }: Props) {
       category_id: values.category_id || null,
       brand: values.brand || null,
       price: values.price,
-      discount_price: values.discount_price ?? null,
+      discount_price:
+  values.discount_price === "" ||
+  values.discount_price === null ||
+  values.discount_price === undefined
+    ? null
+    : Number(values.discount_price),
       quantity: values.quantity,
       low_stock_threshold: values.low_stock_threshold,
       condition: values.condition,
@@ -153,7 +165,7 @@ export default function ProductForm({ categories, initialProduct }: Props) {
 
     setSubmitting(false);
 
-    if (result.error) {
+    if ("error" in result && result.error) {
       toast.error(result.error);
       return;
     }
@@ -182,7 +194,10 @@ export default function ProductForm({ categories, initialProduct }: Props) {
                 <FormItem>
                   <FormLabel>Product Name *</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g. Fender Player Stratocaster" {...field} />
+                    <Input
+                      placeholder="e.g. Fender Player Stratocaster"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -232,7 +247,7 @@ export default function ProductForm({ categories, initialProduct }: Props) {
                     />
                   </FormControl>
                   <FormDescription>
-                    Leave blank to auto-generate. Example: fender-player-stratocaster
+                    Leave blank to auto-generate.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -284,20 +299,20 @@ export default function ProductForm({ categories, initialProduct }: Props) {
             <CardTitle className="font-display">Images</CardTitle>
           </CardHeader>
           <CardContent>
-            <FormField
-              control={form.control}
-              name="images"
-              render={({ field }) => (
-                <FormItem>
-                  <ImageUploader
-                    bucket="products"
-                    value={field.value}
-                    onChange={field.onChange}
-                  />
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+           <FormField
+  control={form.control}
+  name="images"
+  render={({ field }) => (
+    <FormItem>
+      <ImageUploader
+        bucket="products"
+        value={field.value || []}
+        onChange={field.onChange}
+      />
+      <FormMessage />
+    </FormItem>
+  )}
+/>
           </CardContent>
         </Card>
 
@@ -309,78 +324,92 @@ export default function ProductForm({ categories, initialProduct }: Props) {
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
-                control={form.control}
-                name="price"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Price (৳) *</FormLabel>
-                    <FormControl>
-                      <Input type="number" min={0} step="1" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+  control={form.control}
+  name="price"
+  render={({ field }) => (
+    <FormItem>
+      <FormLabel>Price (৳) *</FormLabel>
+      <FormControl>
+        <Input
+          type="number"
+          min={0}
+          step="1"
+          {...field}
+          value={(field.value as string | number | undefined) ?? ""}
+        />
+      </FormControl>
+      <FormMessage />
+    </FormItem>
+  )}
+/>
 
               <FormField
-                control={form.control}
-                name="discount_price"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Discount Price (৳) — optional</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        min={0}
-                        step="1"
-                        placeholder="Leave empty if no discount"
-                        value={field.value ?? ""}
-                        onChange={(e) =>
-                          field.onChange(
-                            e.target.value === ""
-                              ? null
-                              : Number(e.target.value)
-                          )
-                        }
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+  control={form.control}
+  name="discount_price"
+  render={({ field }) => (
+    <FormItem>
+      <FormLabel>Discount Price (৳) — optional</FormLabel>
+      <FormControl>
+        <Input
+          type="number"
+          min={0}
+          step="1"
+          placeholder="Leave empty if no discount"
+          value={(field.value as string | number | undefined) ?? ""}
+          onChange={(e) =>
+            field.onChange(e.target.value === "" ? "" : e.target.value)
+          }
+        />
+      </FormControl>
+      <FormMessage />
+    </FormItem>
+  )}
+/>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="quantity"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Quantity in Stock *</FormLabel>
-                    <FormControl>
-                      <Input type="number" min={0} step="1" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+             <FormField
+  control={form.control}
+  name="quantity"
+  render={({ field }) => (
+    <FormItem>
+      <FormLabel>Quantity in Stock *</FormLabel>
+      <FormControl>
+        <Input
+          type="number"
+          min={0}
+          step="1"
+          {...field}
+          value={(field.value as string | number | undefined) ?? ""}
+        />
+      </FormControl>
+      <FormMessage />
+    </FormItem>
+  )}
+/>
 
-              <FormField
-                control={form.control}
-                name="low_stock_threshold"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Low Stock Alert At</FormLabel>
-                    <FormControl>
-                      <Input type="number" min={0} step="1" {...field} />
-                    </FormControl>
-                    <FormDescription>
-                      Show "Only X left" badge below this quantity
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            <FormField
+  control={form.control}
+  name="low_stock_threshold"
+  render={({ field }) => (
+    <FormItem>
+      <FormLabel>Low Stock Alert At</FormLabel>
+      <FormControl>
+        <Input
+          type="number"
+          min={0}
+          step="1"
+          {...field}
+          value={(field.value as string | number | undefined) ?? ""}
+        />
+      </FormControl>
+      <FormDescription>
+        Show &quot;Only X left&quot; badge below this quantity
+      </FormDescription>
+      <FormMessage />
+    </FormItem>
+  )}
+/>
             </div>
           </CardContent>
         </Card>
@@ -502,7 +531,7 @@ export default function ProductForm({ categories, initialProduct }: Props) {
                       Feature on Home Page
                     </FormLabel>
                     <FormDescription>
-                      Show this product in "Featured Guitars"
+                      Show this product in &quot;Featured Guitars&quot;
                     </FormDescription>
                   </div>
                   <FormControl>
@@ -534,8 +563,8 @@ export default function ProductForm({ categories, initialProduct }: Props) {
           <CardContent>
             {specsField.fields.length === 0 ? (
               <p className="text-sm text-ink/50 text-center py-6">
-                No specs yet. Click "Add Spec" to add details like Body, Neck,
-                Pickups, etc.
+                No specs yet. Click &quot;Add Spec&quot; to add details like
+                Body, Neck, Pickups, etc.
               </p>
             ) : (
               <div className="space-y-3">

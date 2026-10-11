@@ -26,25 +26,29 @@ export default function BlogForm({ initialPost }: Props) {
   const [cover, setCover] = useState<string[]>(
     initialPost?.cover_image ? [initialPost.cover_image] : []
   );
-  const [form, setForm] = useState<Omit<BlogInput, "cover_image">>({
+
+  const [form, setForm] = useState<Omit<BlogInput, "cover_image" | "tags">>({
     title: initialPost?.title || "",
     slug: initialPost?.slug || "",
     excerpt: initialPost?.excerpt || "",
     content: initialPost?.content || "",
     category: initialPost?.category || "",
-    tags: initialPost?.tags || [],
     is_published: initialPost?.is_published ?? false,
     meta_title: initialPost?.meta_title || "",
     meta_description: initialPost?.meta_description || "",
     author: initialPost?.author || "",
   });
+
   const [tagsInput, setTagsInput] = useState(
     (initialPost?.tags || []).join(", ")
   );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.title.trim()) return toast.error("Title is required");
+    if (!form.title.trim()) {
+      toast.error("Title is required");
+      return;
+    }
     setSubmitting(true);
 
     const tags = tagsInput
@@ -63,7 +67,12 @@ export default function BlogForm({ initialPost }: Props) {
       : await createBlogPost(payload);
 
     setSubmitting(false);
-    if (res.error) return toast.error(res.error);
+
+    if ("error" in res && res.error) {
+      toast.error(res.error);
+      return;
+    }
+
     toast.success(initialPost ? "Post updated" : "Post created");
     router.push("/admin/blog");
     router.refresh();

@@ -106,12 +106,12 @@ export default async function AdminDashboardPage() {
           href="/admin/messages"
         />
         <StatCard
-          label="Inventory Value"
-          value={`৳${Math.round(data.stats.inventoryValue).toLocaleString()}`}
-          icon={Wallet}
-          accent="text-green-600 bg-green-50"
-          sublabel={`${data.stats.totalStock} items in stock`}
-        />
+  label="Retail Stock Value"
+  value={`৳${Math.round(data.stats.inventoryValue).toLocaleString()}`}
+  icon={Wallet}
+  accent="text-green-600 bg-green-50"
+  sublabel={`${data.stats.totalStock} items · at current prices`}
+/>
       </div>
 
       {/* Charts row */}

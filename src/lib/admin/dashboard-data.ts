@@ -48,7 +48,7 @@ export async function getDashboardData(): Promise<DashboardData> {
     recentMessagesRes,
     enquiryProductsRes,
   ] = await Promise.all([
-    supabase.from("products").select("id, quantity, price"),
+    supabase.from("products").select("id, quantity, price, discount_price"),
     supabase.from("enquiries").select("id, status, created_at"),
     supabase
       .from("wish_requests")
@@ -89,10 +89,13 @@ export async function getDashboardData(): Promise<DashboardData> {
   // Products stats
   const totalProducts = products.length;
   const totalStock = products.reduce((sum, p) => sum + (p.quantity || 0), 0);
-  const inventoryValue = products.reduce(
-    (sum, p) => sum + (Number(p.price) || 0) * (p.quantity || 0),
-    0
-  );
+const inventoryValue = products.reduce((sum, p) => {
+  const price = Number(p.price) || 0;
+  const discount = p.discount_price ? Number(p.discount_price) : null;
+  const effectivePrice =
+    discount !== null && discount > 0 && discount < price ? discount : price;
+  return sum + effectivePrice * (p.quantity || 0);
+}, 0);
 
   // Enquiries stats
   const newEnquiries = enquiries.filter((e) => e.status === "new").length;
