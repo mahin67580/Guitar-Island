@@ -1,0 +1,199 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+import { Guitar, Heart, Menu, Phone, X } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+
+const NAV_LINKS = [
+  { href: "/", label: "Home" },
+  { href: "/shop", label: "Shop" },
+  { href: "/upcoming", label: "Upcoming" },
+  { href: "/blog", label: "Blog" },
+  { href: "/about", label: "About" },
+  { href: "/contact", label: "Contact" },
+];
+
+export default function Navbar() {
+  const pathname = usePathname();
+  const [scrolled, setScrolled] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [wishlistCount, setWishlistCount] = useState(0);
+
+  // Solid navbar after scrolling 40px
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 40);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  // Read wishlist count from localStorage (updated by CustomEvent in later phases)
+  useEffect(() => {
+    const read = () => {
+      try {
+        const raw = localStorage.getItem("gi_wishlist");
+        const arr = raw ? JSON.parse(raw) : [];
+        setWishlistCount(Array.isArray(arr) ? arr.length : 0);
+      } catch {
+        setWishlistCount(0);
+      }
+    };
+    read();
+    window.addEventListener("storage", read);
+    window.addEventListener("gi_wishlist_changed", read as EventListener);
+    return () => {
+      window.removeEventListener("storage", read);
+      window.removeEventListener("gi_wishlist_changed", read as EventListener);
+    };
+  }, []);
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
+
+  return (
+    <header
+      className={cn(
+        "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
+        scrolled || open
+          ? "bg-ink/95 backdrop-blur-md border-b border-white/10 shadow-lg"
+          : "bg-gradient-to-b from-black/60 to-transparent"
+      )}
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16 md:h-20">
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-2 group">
+            <Guitar className="w-7 h-7 text-brass group-hover:rotate-12 transition-transform" />
+            <span className="font-display text-xl md:text-2xl text-cream tracking-wide">
+              Guitar Island
+            </span>
+          </Link>
+
+          {/* Desktop nav */}
+          <nav className="hidden lg:flex items-center gap-1">
+            {NAV_LINKS.map((link) => {
+              const active =
+                link.href === "/"
+                  ? pathname === "/"
+                  : pathname.startsWith(link.href);
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={cn(
+                    "px-4 py-2 text-sm font-medium rounded-md transition-colors",
+                    active
+                      ? "text-brass"
+                      : "text-cream/90 hover:text-brass hover:bg-white/5"
+                  )}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
+          </nav>
+
+          {/* Right side */}
+          <div className="flex items-center gap-2 md:gap-3">
+            {/* Phone */}
+            <a
+              href="tel:+8801700000000"
+              className="hidden md:flex items-center gap-2 text-sm text-cream/90 hover:text-brass transition-colors"
+            >
+              <Phone className="w-4 h-4" />
+              <span>+880 1700-000000</span>
+            </a>
+
+            {/* Wishlist */}
+            <Link
+              href="/wishlist"
+              className="relative p-2 text-cream/90 hover:text-brass transition-colors"
+              aria-label="Wishlist"
+            >
+              <Heart className="w-5 h-5" />
+              {wishlistCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 bg-retro text-white text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                  {wishlistCount}
+                </span>
+              )}
+            </Link>
+
+            {/* Visit store CTA */}
+            <Button
+              asChild
+              size="sm"
+              className="hidden md:inline-flex bg-brass hover:bg-brass/90 text-ink font-semibold"
+            >
+              <Link href="/contact">Visit Store</Link>
+            </Button>
+
+            {/* Mobile hamburger */}
+            <button
+              onClick={() => setOpen(!open)}
+              className="lg:hidden p-2 text-cream"
+              aria-label="Menu"
+            >
+              {open ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile drawer */}
+      <div
+        className={cn(
+          "lg:hidden overflow-hidden transition-all duration-300 bg-ink/98 backdrop-blur-md border-t border-white/10",
+          open ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
+        )}
+      >
+        <nav className="flex flex-col p-4 gap-1">
+          {NAV_LINKS.map((link) => {
+            const active =
+              link.href === "/"
+                ? pathname === "/"
+                : pathname.startsWith(link.href);
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={cn(
+                  "px-4 py-3 rounded-md text-base font-medium transition-colors",
+                  active
+                    ? "text-brass bg-white/5"
+                    : "text-cream/90 hover:text-brass hover:bg-white/5"
+                )}
+              >
+                {link.label}
+              </Link>
+            );
+          })}
+          <Link
+            href="/wishlist"
+            className="px-4 py-3 rounded-md text-base font-medium text-cream/90 hover:text-brass hover:bg-white/5 flex items-center gap-2"
+          >
+            <Heart className="w-4 h-4" />
+            Wishlist {wishlistCount > 0 && `(${wishlistCount})`}
+          </Link>
+          <a
+            href="tel:+8801700000000"
+            className="px-4 py-3 rounded-md text-base font-medium text-cream/90 hover:text-brass hover:bg-white/5 flex items-center gap-2"
+          >
+            <Phone className="w-4 h-4" />
+            Call us
+          </a>
+          <Button
+            asChild
+            className="mt-2 bg-brass hover:bg-brass/90 text-ink font-semibold"
+          >
+            <Link href="/contact">Visit Store</Link>
+          </Button>
+        </nav>
+      </div>
+    </header>
+  );
+}
