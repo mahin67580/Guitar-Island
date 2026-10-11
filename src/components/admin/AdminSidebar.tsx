@@ -1,6 +1,9 @@
 "use client";
 
+
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 import { usePathname } from "next/navigation";
 import {
   Guitar,
@@ -65,6 +68,49 @@ type Props = {
 export default function AdminSidebar({ onNavigate }: Props) {
   const pathname = usePathname();
 
+  const [newEnquiries, setNewEnquiries] = useState<number>(0);
+
+ useEffect(() => {
+  let cancelled = false;
+  const supabase = createClient();
+
+  const fetchCount = async () => {
+    const { count } = await supabase
+      .from("enquiries")
+      .select("*", { count: "exact", head: true })
+      .eq("status", "new");
+    if (!cancelled) setNewEnquiries(count ?? 0);
+  };
+
+  fetchCount();
+
+  const channelName = `sidebar-enquiries-${Date.now()}-${Math.random()
+    .toString(36)
+    .slice(2, 8)}`;
+
+  const channel = supabase
+    .channel(channelName)
+    .on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: "enquiries" },
+      () => fetchCount()
+    )
+    .subscribe();
+
+  // Polling fallback
+  const interval = setInterval(fetchCount, 30000);
+
+  return () => {
+    cancelled = true;
+    clearInterval(interval);
+    supabase.removeChannel(channel);
+  };
+}, []);
+
+
+
+
+
   return (
     <aside className="w-64 bg-ink text-cream h-full flex flex-col">
       {/* Logo */}
@@ -99,19 +145,26 @@ export default function AdminSidebar({ onNavigate }: Props) {
                     ? pathname === "/admin"
                     : pathname.startsWith(href);
                 return (
-                  <Link
+                                    <Link
                     key={href}
                     href={href}
                     onClick={onNavigate}
                     className={cn(
-                      "flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors",
+                      "flex items-center justify-between gap-2 px-3 py-2 rounded-md text-sm transition-colors",
                       active
                         ? "bg-brass/15 text-brass font-medium"
                         : "text-cream/70 hover:bg-white/5 hover:text-cream"
                     )}
                   >
-                    <Icon className="w-4 h-4 shrink-0" />
-                    <span>{label}</span>
+                    <span className="flex items-center gap-3">
+                      <Icon className="w-4 h-4 shrink-0" />
+                      <span>{label}</span>
+                    </span>
+                    {href === "/admin/enquiries" && newEnquiries > 0 && (
+                      <span className="bg-retro text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] px-1.5 flex items-center justify-center">
+                        {newEnquiries > 99 ? "99+" : newEnquiries}
+                      </span>
+                    )}
                   </Link>
                 );
               })}
