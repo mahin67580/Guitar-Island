@@ -1,20 +1,27 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { requireAdmin } from "@/lib/auth/helpers";
+import { createClient } from "@/lib/supabase/server";
+import MessagesClient from "@/components/admin/MessagesClient";
+import type { Message } from "@/lib/types";
 
 export const metadata = { title: "Messages — Admin" };
 
-export default function Page() {
+export default async function AdminMessagesPage() {
+  await requireAdmin();
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("messages")
+    .select("*")
+    .order("created_at", { ascending: false });
+
   return (
-    <div className="max-w-7xl mx-auto">
-      <Card>
-        <CardHeader>
-          <CardTitle className="font-display text-2xl">Messages</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-ink/60">
-            This page will be built in a later phase.
-          </p>
-        </CardContent>
-      </Card>
+    <div className="max-w-5xl mx-auto space-y-6">
+      <div>
+        <h1 className="font-display text-3xl text-ink">Messages</h1>
+        <p className="text-ink/60 text-sm">
+          Contact form submissions from the public site.
+        </p>
+      </div>
+      <MessagesClient messages={(data as Message[]) || []} />
     </div>
   );
 }

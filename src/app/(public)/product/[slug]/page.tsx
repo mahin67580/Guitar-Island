@@ -42,10 +42,12 @@ export default async function ProductPage({ params }: Props) {
     .neq("id", p.id)
     .limit(3);
 
+  const { getStoreSettings } = await import("@/lib/settings");
+  const settings = await getStoreSettings();
   const whatsappMessage = encodeURIComponent(
-    `Hi Guitar Island! I'm interested in the ${p.name} (৳${price.toLocaleString()}). Is it available?`
+    `Hi ${settings.store_name}! I'm interested in the ${p.name} (৳${price.toLocaleString()}). Is it available?`
   );
-  const whatsappHref = `https://wa.me/8801700000000?text=${whatsappMessage}`;
+  const whatsappHref = `https://wa.me/${settings.whatsapp}?text=${whatsappMessage}`;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

@@ -15,10 +15,40 @@ const playfair = Playfair_Display({
   display: "swap",
 });
 
+
+
+
 export const metadata: Metadata = {
-  title: "Guitar Island",
-  description: "Handpicked guitars, amps, and accessories.",
+  title: {
+    default: "Guitar Island — Handpicked Guitars, Amps & Accessories",
+    template: "%s — Guitar Island",
+  },
+  description:
+    "Browse our collection of handpicked guitars, amps, and accessories. Visit our shop to try before you buy.",
+  keywords: [
+    "guitars",
+    "electric guitars",
+    "acoustic guitars",
+    "bass guitars",
+    "guitar shop",
+    "Guitar Island",
+  ],
+  openGraph: {
+    title: "Guitar Island — Handpicked Guitars, Amps & Accessories",
+    description:
+      "Browse our collection of handpicked guitars, amps, and accessories.",
+    type: "website",
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Guitar Island",
+    description:
+      "Browse our collection of handpicked guitars, amps, and accessories.",
+  },
 };
+
+
 
 export default function RootLayout({
   children,

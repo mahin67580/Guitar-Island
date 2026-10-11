@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, Guitar, MapPin, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { getStoreSettings } from "@/lib/settings";
 import FeaturedProducts from "@/components/public/home/FeaturedProducts";
 import CategoriesSection from "@/components/public/home/CategoriesSection";
 import WhyGuitarIsland from "@/components/public/home/WhyGuitarIsland";
@@ -8,7 +9,8 @@ import LatestBlogPosts from "@/components/public/home/LatestBlogPosts";
 import UpcomingPreview from "@/components/public/home/UpcomingPreview";
 import VisitStore from "@/components/public/home/VisitStore";
 
-export default function HomePage() {
+export default async function HomePage() {
+  const settings = await getStoreSettings();
   return (
     <>
       {/* HERO */}
@@ -28,14 +30,13 @@ export default function HomePage() {
             <span>Handpicked instruments since day one</span>
           </div>
 
-          <h1 className="font-display text-5xl md:text-7xl text-cream leading-tight mb-6">
-            Find Your Sound at
-            <span className="block text-brass">Guitar Island</span>
+                    <h1 className="font-display text-5xl md:text-7xl text-cream leading-tight mb-6">
+            {settings.hero_headline}
+            <span className="block text-brass">{settings.store_name}</span>
           </h1>
 
           <p className="text-lg md:text-xl text-cream/80 max-w-2xl mx-auto mb-10">
-            Browse our collection, come play in-store, and walk out with the
-            guitar you were meant to play.
+            {settings.hero_subheadline}
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -62,14 +63,14 @@ export default function HomePage() {
             </Button>
           </div>
 
-          <div className="mt-14 flex flex-wrap items-center justify-center gap-6 text-cream/70 text-sm">
+                    <div className="mt-14 flex flex-wrap items-center justify-center gap-6 text-cream/70 text-sm">
             <span className="flex items-center gap-2">
               <MapPin className="w-4 h-4 text-brass" />
-              Dhaka, Bangladesh
+              {settings.address}
             </span>
             <span className="flex items-center gap-2">
               <Phone className="w-4 h-4 text-brass" />
-              +880 1700-000000
+              {settings.phone}
             </span>
           </div>
         </div>

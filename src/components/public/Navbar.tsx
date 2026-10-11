@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { Guitar, Heart, Menu, Phone, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import type { StoreSettings } from "@/lib/settings";
 
 const NAV_LINKS = [
   { href: "/", label: "Home" },
@@ -16,13 +17,14 @@ const NAV_LINKS = [
   { href: "/contact", label: "Contact" },
 ];
 
-export default function Navbar() {
+type Props = { settings: StoreSettings };
+
+export default function Navbar({ settings }: Props) {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const [wishlistCount, setWishlistCount] = useState(0);
 
-  // Solid navbar after scrolling 40px
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
     onScroll();
@@ -30,7 +32,6 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Read wishlist count from localStorage (updated by CustomEvent in later phases)
   useEffect(() => {
     const read = () => {
       try {
@@ -50,10 +51,11 @@ export default function Navbar() {
     };
   }, []);
 
-  // Close mobile menu on route change
   useEffect(() => {
     setOpen(false);
   }, [pathname]);
+
+  const telHref = `tel:${settings.phone.replace(/\s/g, "")}`;
 
   return (
     <header
@@ -66,15 +68,13 @@ export default function Navbar() {
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 md:h-20">
-          {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group">
             <Guitar className="w-7 h-7 text-brass group-hover:rotate-12 transition-transform" />
             <span className="font-display text-xl md:text-2xl text-cream tracking-wide">
-              Guitar Island
+              {settings.store_name}
             </span>
           </Link>
 
-          {/* Desktop nav */}
           <nav className="hidden lg:flex items-center gap-1">
             {NAV_LINKS.map((link) => {
               const active =
@@ -98,18 +98,15 @@ export default function Navbar() {
             })}
           </nav>
 
-          {/* Right side */}
           <div className="flex items-center gap-2 md:gap-3">
-            {/* Phone */}
             <a
-              href="tel:+8801700000000"
+              href={telHref}
               className="hidden md:flex items-center gap-2 text-sm text-cream/90 hover:text-brass transition-colors"
             >
               <Phone className="w-4 h-4" />
-              <span>+880 1700-000000</span>
+              <span>{settings.phone}</span>
             </a>
 
-            {/* Wishlist */}
             <Link
               href="/wishlist"
               className="relative p-2 text-cream/90 hover:text-brass transition-colors"
@@ -123,7 +120,6 @@ export default function Navbar() {
               )}
             </Link>
 
-            {/* Visit store CTA */}
             <Button
               asChild
               size="sm"
@@ -132,7 +128,6 @@ export default function Navbar() {
               <Link href="/contact">Visit Store</Link>
             </Button>
 
-            {/* Mobile hamburger */}
             <button
               onClick={() => setOpen(!open)}
               className="lg:hidden p-2 text-cream"
@@ -144,7 +139,6 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Mobile drawer */}
       <div
         className={cn(
           "lg:hidden overflow-hidden transition-all duration-300 bg-ink/98 backdrop-blur-md border-t border-white/10",
@@ -180,7 +174,7 @@ export default function Navbar() {
             Wishlist {wishlistCount > 0 && `(${wishlistCount})`}
           </Link>
           <a
-            href="tel:+8801700000000"
+            href={telHref}
             className="px-4 py-3 rounded-md text-base font-medium text-cream/90 hover:text-brass hover:bg-white/5 flex items-center gap-2"
           >
             <Phone className="w-4 h-4" />

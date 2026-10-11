@@ -1,20 +1,29 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { requireAdmin } from "@/lib/auth/helpers";
+import { createClient } from "@/lib/supabase/server";
+import UpcomingClient from "@/components/admin/UpcomingClient";
+import type { UpcomingProduct } from "@/lib/types";
 
-export const metadata = { title: "Upcoming Products — Admin" };
+export const metadata = { title: "Upcoming — Admin" };
 
-export default function Page() {
+export default async function AdminUpcomingPage() {
+  await requireAdmin();
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("upcoming_products")
+    .select("*")
+    .order("expected_date", { ascending: true });
+
   return (
-    <div className="max-w-7xl mx-auto">
-      <Card>
-        <CardHeader>
-          <CardTitle className="font-display text-2xl">Upcoming Products</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-ink/60">
-            This page will be built in a later phase.
-          </p>
-        </CardContent>
-      </Card>
+    <div className="max-w-5xl mx-auto space-y-6">
+      <div>
+        <h1 className="font-display text-3xl text-ink">
+          Upcoming Products
+        </h1>
+        <p className="text-ink/60 text-sm">
+          Manage what's coming soon to your shop.
+        </p>
+      </div>
+      <UpcomingClient items={(data as UpcomingProduct[]) || []} />
     </div>
   );
 }

@@ -4,7 +4,9 @@ import { MessageCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 
-export default function WhatsAppButton() {
+type Props = { whatsapp: string };
+
+export default function WhatsAppButton({ whatsapp }: Props) {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -14,11 +16,12 @@ export default function WhatsAppButton() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const phone = "8801700000000"; // replace with real number, no + or spaces
+  if (!whatsapp) return null;
+
   const message = encodeURIComponent(
-    "Hi Guitar Island! I'm interested in a guitar from your website."
+    "Hi! I'm interested in a guitar from your website."
   );
-  const href = `https://wa.me/${phone}?text=${message}`;
+  const href = `https://wa.me/${whatsapp}?text=${message}`;
 
   return (
     <a
@@ -30,7 +33,9 @@ export default function WhatsAppButton() {
         "fixed bottom-6 right-6 z-40 flex items-center justify-center",
         "h-14 w-14 rounded-full bg-[#25D366] text-white shadow-xl",
         "hover:scale-110 hover:shadow-2xl transition-all duration-300",
-        visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none"
+        visible
+          ? "opacity-100 translate-y-0"
+          : "opacity-0 translate-y-4 pointer-events-none"
       )}
     >
       <MessageCircle className="w-7 h-7" strokeWidth={2.2} />
