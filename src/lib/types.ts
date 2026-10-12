@@ -116,3 +116,24 @@ export type Profile = {
   role: "customer" | "admin";
   created_at: string;
 };
+export type GalleryAlbum = {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string | null;
+  cover_image?: string | null;
+  sort_order: number;
+  is_published: boolean;
+  created_at: string;
+  image_count?: number;
+};
+
+export type GalleryImage = {
+  id: string;
+  album_id: string | null;
+  image_url: string;
+  caption?: string | null;
+  sort_order: number;
+  is_published: boolean;
+  created_at: string;
+};

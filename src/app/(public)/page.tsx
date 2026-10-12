@@ -10,19 +10,39 @@ import UpcomingPreview from "@/components/public/home/UpcomingPreview";
 import VisitStore from "@/components/public/home/VisitStore";
 import { createClient } from "@/lib/supabase/server";
 import type { Category } from "@/lib/types";
-
+import Marquee from "@/components/public/home/Marquee";
+import HomeGallery from "@/components/public/home/HomeGallery";
 export default async function HomePage() {
   const settings = await getStoreSettings();
+
   const supabase = await createClient();
-const { data: categoriesData } = await supabase
-  .from("categories")
-  .select("*")
-  .order("sort_order", { ascending: true });
-const categories: Category[] = categoriesData ?? [];
+
+  const [{ data: categoriesData }, { data: galleryData }] = await Promise.all([
+    supabase
+      .from("categories")
+      .select("*")
+      .order("sort_order", { ascending: true }),
+    supabase
+      .from("gallery_images")
+      .select("id, image_url, caption, album_id")
+      .eq("is_published", true)
+      .order("created_at", { ascending: false })
+      .limit(12),
+  ]);
+
+  const categories: Category[] = categoriesData ?? [];
+  const galleryImages = (galleryData ?? []).map((img) => ({
+    id: img.id,
+    image_url: img.image_url,
+    caption: img.caption ?? null,
+  }));
+
+
+
   return (
     <>
       {/* HERO */}
-      <section className="relative h-[90vh] min-h-[600px] flex items-center justify-center overflow-hidden bg-gradient-to-br from-ink via-wood to-ink">
+      <section className="relative  h-[90vh] min-h-[600px] flex items-center justify-center overflow-hidden bg-gradient-to-br from-ink via-wood to-ink">
         <div
           className="absolute inset-0 opacity-25 bg-cover bg-center"
           style={{
@@ -38,7 +58,7 @@ const categories: Category[] = categoriesData ?? [];
             <span>Handpicked instruments since day one</span>
           </div>
 
-                    <h1 className="font-display text-5xl md:text-7xl text-cream leading-tight mb-6">
+          <h1 className="font-display text-5xl md:text-7xl text-cream leading-tight mb-6">
             {settings.hero_headline}
             <span className="block text-brass">{settings.store_name}</span>
           </h1>
@@ -71,7 +91,7 @@ const categories: Category[] = categoriesData ?? [];
             </Button>
           </div>
 
-                    <div className="mt-14 flex flex-wrap items-center justify-center gap-6 text-cream/70 text-sm">
+          <div className="mt-14 flex flex-wrap items-center justify-center gap-6 text-cream/70 text-sm">
             <span className="flex items-center gap-2">
               <MapPin className="w-4 h-4 text-brass" />
               {settings.address}
@@ -85,12 +105,16 @@ const categories: Category[] = categoriesData ?? [];
       </section>
 
       {/* SECTIONS */}
+      <Marquee />
       <FeaturedProducts />
       <CategoriesSection categories={categories || []} />
+
       <WhyGuitarIsland />
-      <LatestBlogPosts />
+      <HomeGallery images={galleryImages} />
+      {/* <LatestBlogPosts /> */}
       <UpcomingPreview />
       <VisitStore />
+      <Marquee />
     </>
   );
 }

@@ -18,6 +18,7 @@ import {
   Users,
   Mail,
   Settings,
+  Images,
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -51,6 +52,7 @@ const NAV_SECTIONS = [
     label: "Content",
     items: [
       { href: "/admin/blog", label: "Blog Posts", icon: Newspaper },
+      { href: "/admin/gallery", label: "Gallery", icon: Images },
     ],
   },
   {

@@ -11,6 +11,7 @@ import WishlistButton from "@/components/public/WishlistButton";
 import ProductCard from "@/components/public/ProductCard";
 import SectionHeading from "@/components/public/SectionHeading";
 import type { Product } from "@/lib/types";
+import ProductGallery from "@/components/public/ProductGallery";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -50,7 +51,7 @@ export default async function ProductPage({ params }: Props) {
   const whatsappHref = `https://wa.me/${settings.whatsapp}?text=${whatsappMessage}`;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 mt-15">
       {/* Breadcrumb */}
       <div className="mb-6">
         <Link
@@ -64,49 +65,11 @@ export default async function ProductPage({ params }: Props) {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 mb-20">
         {/* Image gallery */}
-        <div className="space-y-3">
-          <div className="relative aspect-square rounded-2xl overflow-hidden bg-cream/50 border border-black/5">
-            {mainImage ? (
-              <Image
-                src={mainImage}
-                alt={p.name}
-                fill
-                sizes="(max-width: 1024px) 100vw, 50vw"
-                className="object-cover"
-                priority
-              />
-            ) : (
-              <div className="absolute inset-0 flex items-center justify-center text-ink/20">
-                <ImageIcon className="w-20 h-20" />
-              </div>
-            )}
-            {isSoldOut && (
-              <div className="absolute top-4 left-4">
-                <Badge variant="destructive">Sold Out</Badge>
-              </div>
-            )}
-          </div>
-
-          {/* Thumbnails (if more than 1 image) */}
-          {p.images && p.images.length > 1 && (
-            <div className="grid grid-cols-4 gap-3">
-              {p.images.map((img, i) => (
-                <div
-                  key={i}
-                  className="relative aspect-square rounded-lg overflow-hidden border border-black/5"
-                >
-                  <Image
-                    src={img}
-                    alt={`${p.name} ${i + 1}`}
-                    fill
-                    sizes="150px"
-                    className="object-cover"
-                  />
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+       <ProductGallery
+  images={p.images || []}
+  alt={p.name}
+  isSoldOut={isSoldOut}
+/>
 
         {/* Info */}
         <div>

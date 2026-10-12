@@ -55,7 +55,7 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${inter.variable} ${playfair.variable}`}>
-      <body className="font-sans antialiased">
+      <body className="font-sans antialiased ">
         {children}
         <Toaster richColors position="top-center" />
         <script

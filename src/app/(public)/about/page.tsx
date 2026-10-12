@@ -40,7 +40,7 @@ export default function AboutPage() {
   return (
     <>
       {/* Hero */}
-      <section className="bg-ink text-cream py-20">
+      <section className="bg-ink text-cream py-20 mt-15">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <p className="text-brass uppercase tracking-widest text-sm mb-4">
             Our Story

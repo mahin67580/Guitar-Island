@@ -135,7 +135,7 @@ export default function ProductCard({ product, className }: Props) {
           </div>
           {!isSoldOut && (
             <span className="text-xs text-ink/50">
-              {product.quantity} in stock
+              <span className="text-2xl font-bold  text-[#25D366]">{product.quantity}</span> in stock
             </span>
           )}
         </div>

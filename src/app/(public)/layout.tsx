@@ -13,7 +13,7 @@ export default async function PublicLayout({
   return (
     <>
       <Navbar settings={settings} />
-      <main className="min-h-screen">{children}</main>
+      <main className="min-h-screen ">{children}</main>
       <Footer />
       <WhatsAppButton whatsapp={settings.whatsapp} />
     </>

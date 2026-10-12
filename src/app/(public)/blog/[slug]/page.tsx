@@ -54,7 +54,7 @@ export default async function BlogPostPage({ params }: Props) {
     : { data: [] };
 
   return (
-    <article className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <article className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10 mt-15">
       {/* Back */}
       <Link
         href="/blog"

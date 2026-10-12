@@ -22,6 +22,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE_URL}/about`, changeFrequency: "monthly", priority: 0.5 },
     { url: `${BASE_URL}/contact`, changeFrequency: "monthly", priority: 0.6 },
     { url: `${BASE_URL}/wishlist`, changeFrequency: "monthly", priority: 0.4 },
+    { url: `${BASE_URL}/gallery`, changeFrequency: "weekly", priority: 0.6 },
   ];
 
   const productRoutes: MetadataRoute.Sitemap = (products.data || []).map(
@@ -40,5 +41,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.6,
   }));
 
-  return [...staticRoutes, ...productRoutes, ...blogRoutes];
+  // Fetch gallery albums
+const { data: albums } = await supabase
+  .from("gallery_albums")
+  .select("slug, created_at")
+  .eq("is_published", true);
+
+const galleryRoutes: MetadataRoute.Sitemap = (albums || []).map((a) => ({
+  url: `${BASE_URL}/gallery/${a.slug}`,
+  lastModified: a.created_at ? new Date(a.created_at) : undefined,
+  changeFrequency: "monthly" as const,
+  priority: 0.5,
+}));
+
+  return [...staticRoutes, ...productRoutes, ...blogRoutes, ...galleryRoutes];
 }

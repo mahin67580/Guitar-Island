@@ -18,7 +18,7 @@ export default async function FeaturedProducts() {
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
       <SectionHeading
-        title="Featured Guitars"
+        title="Featured Products"
         subtitle="Handpicked instruments we're proud to put in your hands."
         viewAllHref="/shop"
         viewAllLabel="Browse all guitars"

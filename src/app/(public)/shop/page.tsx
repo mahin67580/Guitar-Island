@@ -67,14 +67,14 @@ async function ShopContent({ searchParams }: { searchParams: SearchParams }) {
   const list = (products as Product[]) || [];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10   mt-15">
       {/* Page header */}
       <div className="mb-10">
         <h1 className="font-display text-4xl md:text-5xl text-ink mb-2">
-          Shop All Guitars
+          Shop All Products
         </h1>
         <p className="text-ink/60">
-          {list.length} {list.length === 1 ? "instrument" : "instruments"}{" "}
+          {list.length} {list.length === 1 ? "Product" : "Products"}{" "}
           available
         </p>
       </div>

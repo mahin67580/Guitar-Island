@@ -41,7 +41,7 @@ export default async function ContactPage() {
   )}&output=embed`;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 mt-15">
       <div className="mb-12 text-center">
         <p className="text-brass uppercase tracking-widest text-sm mb-3">
           Get In Touch

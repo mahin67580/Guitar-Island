@@ -12,6 +12,7 @@ const NAV_LINKS = [
   { href: "/", label: "Home" },
   { href: "/shop", label: "Shop" },
   { href: "/upcoming", label: "Upcoming" },
+    { href: "/gallery", label: "Gallery" },
   { href: "/blog", label: "Blog" },
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },
@@ -55,23 +56,28 @@ export default function Navbar({ settings }: Props) {
     setOpen(false);
   }, [pathname]);
 
-  const telHref = `tel:${settings.phone.replace(/\s/g, "")}`;
+  const whatsappHref = `https://wa.me/${settings.whatsapp}?text=${encodeURIComponent(
+    "Hi! I'm interested in a guitar from your website."
+  )}`;
 
   return (
     <header
       className={cn(
-        "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
-        scrolled || open
-          ? "bg-ink/95 backdrop-blur-md border-b border-white/10 shadow-lg"
-          : "bg-gradient-to-b from-black/60 to-transparent"
+        "fixed top-0 left-0 right-0 z-50",
+        "bg-ink/95 backdrop-blur-md border-b border-white/10 shadow-lg"
       )}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 md:h-20">
           <Link href="/" className="flex items-center gap-2 group">
-            <Guitar className="w-7 h-7 text-brass group-hover:rotate-12 transition-transform" />
+            <img
+              src="/logo.png"
+              alt={settings.store_name}
+              className="w-10 h-10 object-contain group-hover:rotate-12 transition-transform"
+            />
             <span className="font-display text-xl md:text-2xl text-cream tracking-wide">
               {settings.store_name}
+
             </span>
           </Link>
 
@@ -100,7 +106,9 @@ export default function Navbar({ settings }: Props) {
 
           <div className="flex items-center gap-2 md:gap-3">
             <a
-              href={telHref}
+              href={whatsappHref}
+              target="_blank"
+              rel="noopener noreferrer"
               className="hidden md:flex items-center gap-2 text-sm text-cream/90 hover:text-brass transition-colors"
             >
               <Phone className="w-4 h-4" />
@@ -174,11 +182,13 @@ export default function Navbar({ settings }: Props) {
             Wishlist {wishlistCount > 0 && `(${wishlistCount})`}
           </Link>
           <a
-            href={telHref}
+            href={whatsappHref}
+            target="_blank"
+            rel="noopener noreferrer"
             className="px-4 py-3 rounded-md text-base font-medium text-cream/90 hover:text-brass hover:bg-white/5 flex items-center gap-2"
           >
             <Phone className="w-4 h-4" />
-            Call us
+            Chat on WhatsApp
           </a>
           <Button
             asChild
