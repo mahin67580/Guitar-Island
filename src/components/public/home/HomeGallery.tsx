@@ -18,9 +18,37 @@ type Props = {
 };
 
 const AUTOPLAY_MS = 3200;
-const VISIBLE_SIDE = 2; // how many cards to show on each side
+const VISIBLE_SIDE = 2;
 
+// ── Wrapper: defers mounting until the browser is idle ──────────────
 export default function HomeGallery({ images }: Props) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    if ("requestIdleCallback" in window) {
+      const id = window.requestIdleCallback(() => setMounted(true));
+      return () => window.cancelIdleCallback(id);
+    } else {
+      const id = setTimeout(() => setMounted(true), 200);
+      return () => clearTimeout(id);
+    }
+  }, []);
+
+  if (!mounted) {
+    return (
+      <section className="bg-cream/40 py-20 min-h-[500px]">
+        <div className="max-w-7xl mx-auto px-4 text-center">
+          <p className="text-ink/40 text-sm">Loading gallery...</p>
+        </div>
+      </section>
+    );
+  }
+
+  return <GalleryCarousel images={images} />;
+}
+
+// ── Carousel: all heavy logic lives here, mounts only when ready ───
+function GalleryCarousel({ images }: Props) {
   const [current, setCurrent] = useState(0);
   const [paused, setPaused] = useState(false);
   const [errored, setErrored] = useState<Set<number>>(new Set());
@@ -48,12 +76,10 @@ export default function HomeGallery({ images }: Props) {
     return () => window.removeEventListener("keydown", onKey);
   }, [total]);
 
-  // Nothing to show
   if (total === 0) return null;
 
   const goTo = (index: number) => setCurrent((index + total) % total);
 
-  // Compute relative position offset (shortest path around the circle)
   const offsetFor = (index: number) => {
     let diff = index - current;
     if (diff > total / 2) diff -= total;
@@ -67,13 +93,10 @@ export default function HomeGallery({ images }: Props) {
         <SectionHeading
           title="From Our Gallery"
           subtitle="Customers, events, and moments from Guitar Island."
-         
-         
           center
         />
       </div>
 
-      {/* Coverflow carousel — full width, no container constraint */}
       <div
         className="relative h-[300px] sm:h-[380px] md:h-[440px] mt-10"
         onMouseEnter={() => setPaused(true)}
@@ -86,10 +109,9 @@ export default function HomeGallery({ images }: Props) {
             const isCenter = offset === 0;
             const isHidden = absOffset > VISIBLE_SIDE;
 
-            // Layout math for coverflow
-            const translateX = offset * 55; // % of card width
-            const translateZ = -absOffset * 220; // px back
-            const rotateY = offset * -32; // deg tilt
+            const translateX = offset * 55;
+            const translateZ = -absOffset * 220;
+            const rotateY = offset * -32;
             const scale = isCenter ? 1 : 0.82 - absOffset * 0.06;
             const opacity = isHidden ? 0 : isCenter ? 1 : 0.85 - absOffset * 0.18;
             const zIndex = 100 - absOffset;
@@ -133,7 +155,6 @@ export default function HomeGallery({ images }: Props) {
                   />
                 )}
 
-                {/* Caption on center card */}
                 {isCenter && img.caption && (
                   <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink/90 to-transparent p-5 pt-12">
                     <p className="text-cream text-sm line-clamp-2 text-left">
@@ -142,7 +163,6 @@ export default function HomeGallery({ images }: Props) {
                   </div>
                 )}
 
-                {/* Subtle overlay on side cards */}
                 {!isCenter && (
                   <div className="absolute inset-0 bg-ink/20" />
                 )}
@@ -151,12 +171,10 @@ export default function HomeGallery({ images }: Props) {
           })}
         </div>
 
-        {/* Fade edges */}
         <div className="pointer-events-none absolute inset-y-0 left-0 w-24 sm:w-40 bg-gradient-to-r from-cream/40 to-transparent z-50" />
         <div className="pointer-events-none absolute inset-y-0 right-0 w-24 sm:w-40 bg-gradient-to-l from-cream/40 to-transparent z-50" />
       </div>
 
-      {/* Dots */}
       {total > 1 && (
         <div className="flex items-center justify-center gap-2 mt-10 flex-wrap px-4">
           {images.map((_, i) => (
@@ -175,7 +193,6 @@ export default function HomeGallery({ images }: Props) {
         </div>
       )}
 
-      {/* CTA */}
       <div className="text-center mt-10">
         <Link
           href="/gallery"
