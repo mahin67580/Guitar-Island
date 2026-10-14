@@ -45,13 +45,13 @@ export default async function HomePage() {
       {/* HERO */}
       <section className="relative  h-[90vh] min-h-[600px] flex items-center justify-center overflow-hidden bg-gradient-to-br from-ink via-wood to-ink">
         <div className="absolute inset-0 opacity-25">
-          <Image
+          <img
             src="/hero.webp"
-            alt="Hero background"
-            fill
-            priority
-            sizes="100vw"
-            className="object-cover"
+            alt="hero"
+            fetchPriority="high"
+            loading="eager"
+            decoding="async"
+            className="absolute inset-0 w-full h-full object-cover"
           />
         </div>
         <div className="absolute inset-0 bg-gradient-to-b from-ink/70 via-ink/50 to-ink/90" />
