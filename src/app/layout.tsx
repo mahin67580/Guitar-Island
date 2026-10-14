@@ -15,9 +15,6 @@ const playfair = Playfair_Display({
   display: "swap",
 });
 
-
-
-
 export const metadata: Metadata = {
   title: {
     default: "Guitar Island — Handpicked Guitars, Amps & Accessories",
@@ -48,31 +45,43 @@ export const metadata: Metadata = {
   },
 };
 
-
-
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+  const supabaseOrigin = supabaseUrl
+    ? new URL(supabaseUrl).origin
+    : "";
+
   return (
     <html lang="en" className={`${inter.variable} ${playfair.variable}`}>
-      <body className="font-sans antialiased ">
+      <head>
+        {supabaseOrigin && (
+          <>
+            <link rel="preconnect" href={supabaseOrigin} />
+            <link rel="dns-prefetch" href={supabaseOrigin} />
+          </>
+        )}
+        <link rel="preconnect" href="https://images.unsplash.com" />
+      </head>
+      <body className="font-sans antialiased">
         {children}
         <Toaster richColors position="top-center" />
         <script
-  type="application/ld+json"
-  dangerouslySetInnerHTML={{
-    __html: JSON.stringify({
-      "@context": "https://schema.org",
-      "@type": "MusicStore",
-      name: "Guitar Island",
-      description:
-        "Handpicked guitars, amps, and accessories. Visit our shop to try before you buy.",
-      image: `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/og-image.png`,
-      url: process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
-      priceRange: "৳৳",
-    }),
-  }}
-/>
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "MusicStore",
+              name: "Guitar Island",
+              description:
+                "Handpicked guitars, amps, and accessories. Visit our shop to try before you buy.",
+              image: `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/og-image.png`,
+              url: process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
+              priceRange: "৳৳",
+            }),
+          }}
+        />
       </body>
     </html>
   );

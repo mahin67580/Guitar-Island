@@ -12,6 +12,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { Category } from "@/lib/types";
 import Marquee from "@/components/public/home/Marquee";
 import HomeGallery from "@/components/public/home/HomeGallery";
+import Image from "next/image"
 export default async function HomePage() {
   const settings = await getStoreSettings();
 
@@ -43,13 +44,16 @@ export default async function HomePage() {
     <>
       {/* HERO */}
       <section className="relative  h-[90vh] min-h-[600px] flex items-center justify-center overflow-hidden bg-gradient-to-br from-ink via-wood to-ink">
-        <div
-          className="absolute inset-0 opacity-25 bg-cover bg-center"
-          style={{
-            backgroundImage:
-              "url('https://images.unsplash.com/photo-1510915361894-db8b60106cb1?w=1920&q=80')",
-          }}
-        />
+        <div className="absolute inset-0 opacity-25">
+          <Image
+            src="/hero.webp"
+            alt="Hero background"
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover"
+          />
+        </div>
         <div className="absolute inset-0 bg-gradient-to-b from-ink/70 via-ink/50 to-ink/90" />
 
         <div className="relative z-10 max-w-4xl mx-auto px-4 text-center">
