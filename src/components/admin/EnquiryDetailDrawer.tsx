@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import {
+  ArrowLeft,
   Calendar,
   Check,
   Clock,
@@ -155,27 +156,41 @@ export default function EnquiryDetailDrawer({
         <SheetContent className="w-full sm:max-w-xl p-0 overflow-y-auto">
           {/* Header */}
           <SheetHeader className="sticky top-0 bg-white border-b border-black/5 px-6 py-4 z-10">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <SheetTitle className="font-display text-2xl text-left">
-                  {enquiry.customer_name}
-                </SheetTitle>
-                <p className="text-xs text-ink/50 mt-1 text-left">
-                  Received {format(new Date(enquiry.created_at), "MMM d, yyyy · h:mm a")}
-                </p>
-              </div>
-              <Badge
-                variant="outline"
-                className={cn("shrink-0", statusConfig.color)}
+            <div className="flex items-start gap-3">
+              {/* ← Back button */}
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onClose}
+                aria-label="Back to enquiries"
+                className="shrink-0 -ml-2 h-9 w-9 mt-0.5"
               >
-                <span
-                  className={cn(
-                    "w-1.5 h-1.5 rounded-full mr-1.5",
-                    statusConfig.dotColor
-                  )}
-                />
-                {statusConfig.label}
-              </Badge>
+                <ArrowLeft className="w-5 h-5" />
+              </Button>
+
+              <div className="flex-1 min-w-0 flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <SheetTitle className="font-display text-2xl text-left truncate">
+                    {enquiry.customer_name}
+                  </SheetTitle>
+                  <p className="text-xs text-ink/50 mt-1 text-left">
+                    Received{" "}
+                    {format(new Date(enquiry.created_at), "MMM d, yyyy · h:mm a")}
+                  </p>
+                </div>
+                <Badge
+                  variant="outline"
+                  className={cn("shrink-0", statusConfig.color)}
+                >
+                  <span
+                    className={cn(
+                      "w-1.5 h-1.5 rounded-full mr-1.5",
+                      statusConfig.dotColor
+                    )}
+                  />
+                  {statusConfig.label}
+                </Badge>
+              </div>
             </div>
           </SheetHeader>
 

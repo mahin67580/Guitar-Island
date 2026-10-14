@@ -184,9 +184,9 @@ export default function GalleryAdminClient({ albums, images }: Props) {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Albums list header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <p className="text-sm text-ink/60">
           {albums.length} album{albums.length === 1 ? "" : "s"} ·{" "}
           {images.length} image{images.length === 1 ? "" : "s"}
@@ -194,7 +194,7 @@ export default function GalleryAdminClient({ albums, images }: Props) {
         {!showAlbumForm && (
           <Button
             onClick={startCreateAlbum}
-            className="bg-brass hover:bg-brass/90 text-ink font-semibold"
+            className="bg-brass hover:bg-brass/90 text-ink font-semibold w-full sm:w-auto justify-center"
           >
             <Plus className="w-4 h-4 mr-2" />
             New Album
@@ -205,11 +205,16 @@ export default function GalleryAdminClient({ albums, images }: Props) {
       {/* Album form */}
       {showAlbumForm && (
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="font-display">
+          <CardHeader className="flex flex-row items-start sm:items-center justify-between gap-2">
+            <CardTitle className="font-display text-xl sm:text-2xl">
               {editingAlbum ? "Edit Album" : "New Album"}
             </CardTitle>
-            <Button variant="ghost" size="icon" onClick={cancelAlbumForm}>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={cancelAlbumForm}
+              className="shrink-0 -mt-1 sm:mt-0"
+            >
               <X className="w-4 h-4" />
             </Button>
           </CardHeader>
@@ -263,7 +268,7 @@ export default function GalleryAdminClient({ albums, images }: Props) {
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:items-end">
                 <div>
                   <Label>Sort Order</Label>
                   <Input
@@ -275,7 +280,7 @@ export default function GalleryAdminClient({ albums, images }: Props) {
                         sort_order: Number(e.target.value),
                       })
                     }
-                    className="max-w-[140px]"
+                    className="w-full md:max-w-[140px]"
                   />
                 </div>
                 <div className="flex items-center justify-between rounded-lg border border-black/5 p-3">
@@ -289,11 +294,11 @@ export default function GalleryAdminClient({ albums, images }: Props) {
                 </div>
               </div>
 
-              <div className="flex gap-3">
+              <div className="flex flex-col sm:flex-row gap-3">
                 <Button
                   type="submit"
                   disabled={submitting}
-                  className="bg-brass hover:bg-brass/90 text-ink font-semibold"
+                  className="bg-brass hover:bg-brass/90 text-ink font-semibold w-full sm:w-auto justify-center"
                 >
                   {submitting ? (
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -306,6 +311,7 @@ export default function GalleryAdminClient({ albums, images }: Props) {
                   type="button"
                   variant="ghost"
                   onClick={cancelAlbumForm}
+                  className="w-full sm:w-auto justify-center"
                 >
                   Cancel
                 </Button>
@@ -317,9 +323,9 @@ export default function GalleryAdminClient({ albums, images }: Props) {
 
       {/* Empty state */}
       {albums.length === 0 && !showAlbumForm && (
-        <div className="text-center py-16 rounded-xl bg-cream/50">
+        <div className="text-center py-16 px-4 rounded-xl bg-cream/50">
           <FolderOpen className="w-12 h-12 mx-auto mb-3 text-ink/20" />
-          <p className="text-ink/60 mb-4">
+          <p className="text-ink/60 mb-4 text-sm sm:text-base">
             No albums yet. Create your first one to start adding images.
           </p>
         </div>
@@ -335,7 +341,8 @@ export default function GalleryAdminClient({ albums, images }: Props) {
             className="rounded-xl border border-black/5 bg-white overflow-hidden"
           >
             {/* Album header */}
-            <div className="flex items-center gap-4 p-4">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 p-3 sm:p-4">
+              {/* Row 1 on mobile: chevron + cover + info */}
               <button
                 onClick={() => setExpanded(isOpen ? null : album.id)}
                 className="flex items-center gap-3 flex-1 text-left min-w-0"
@@ -346,7 +353,7 @@ export default function GalleryAdminClient({ albums, images }: Props) {
                   <ChevronRight className="w-4 h-4 text-ink/50 shrink-0" />
                 )}
 
-                <div className="relative w-14 h-14 rounded-lg overflow-hidden bg-cream/50 border border-black/5 shrink-0">
+                <div className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-lg overflow-hidden bg-cream/50 border border-black/5 shrink-0">
                   {album.cover_image ? (
                     <Image
                       src={album.cover_image}
@@ -363,8 +370,8 @@ export default function GalleryAdminClient({ albums, images }: Props) {
                 </div>
 
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2 mb-0.5">
-                    <p className="font-medium text-ink truncate">
+                  <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                    <p className="font-medium text-ink truncate text-sm sm:text-base">
                       {album.name}
                     </p>
                     {album.is_published ? (
@@ -379,19 +386,21 @@ export default function GalleryAdminClient({ albums, images }: Props) {
                       </Badge>
                     )}
                   </div>
-                  <p className="text-xs text-ink/50">
+                  <p className="text-xs text-ink/50 truncate">
                     /{album.slug} · {albumImages.length} image
                     {albumImages.length === 1 ? "" : "s"}
                   </p>
                 </div>
               </button>
 
-              <div className="flex gap-1 shrink-0">
+              {/* Actions — full row on mobile, inline on desktop */}
+              <div className="flex gap-1 shrink-0 justify-end">
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={() => handleTogglePublish(album, !album.is_published)}
                   title={album.is_published ? "Hide album" : "Publish album"}
+                  className="h-9 w-9"
                 >
                   {album.is_published ? (
                     <EyeOff className="w-4 h-4" />
@@ -403,6 +412,7 @@ export default function GalleryAdminClient({ albums, images }: Props) {
                   variant="ghost"
                   size="sm"
                   onClick={() => startEditAlbum(album)}
+                  className="h-9"
                 >
                   Edit
                 </Button>
@@ -410,7 +420,7 @@ export default function GalleryAdminClient({ albums, images }: Props) {
                   variant="ghost"
                   size="icon"
                   onClick={() => setDeleteAlbumId(album.id)}
-                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                  className="h-9 w-9 text-red-600 hover:text-red-700 hover:bg-red-50"
                 >
                   <Trash2 className="w-4 h-4" />
                 </Button>
@@ -419,7 +429,7 @@ export default function GalleryAdminClient({ albums, images }: Props) {
 
             {/* Expanded images */}
             {isOpen && (
-              <div className="border-t border-black/5 p-4 bg-cream/20">
+              <div className="border-t border-black/5 p-3 sm:p-4 bg-cream/20">
                 {/* Add images */}
                 <div className="mb-4">
                   <Label className="mb-2 block text-sm">
@@ -437,7 +447,7 @@ export default function GalleryAdminClient({ albums, images }: Props) {
                     No images yet. Upload some above.
                   </p>
                 ) : (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
                     {albumImages.map((image) => (
                       <div
                         key={image.id}
@@ -454,8 +464,8 @@ export default function GalleryAdminClient({ albums, images }: Props) {
                           )}
                         />
 
-                        {/* Hover overlay */}
-                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                        {/* Hover overlay (desktop) */}
+                        <div className="absolute inset-0 bg-black/60 opacity-0 sm:group-hover:opacity-100 transition-opacity hidden sm:flex items-center justify-center gap-2">
                           <Button
                             size="sm"
                             variant="secondary"
@@ -483,6 +493,32 @@ export default function GalleryAdminClient({ albums, images }: Props) {
                           </Button>
                         </div>
 
+                        {/* Always-visible action buttons on mobile */}
+                        <div className="sm:hidden absolute bottom-1.5 right-1.5 flex gap-1">
+                          <button
+                            onClick={() =>
+                              handleToggleImage(image, !image.is_published)
+                            }
+                            aria-label={
+                              image.is_published ? "Hide image" : "Show image"
+                            }
+                            className="h-7 w-7 rounded-full bg-black/70 text-white flex items-center justify-center"
+                          >
+                            {image.is_published ? (
+                              <EyeOff className="w-3 h-3" />
+                            ) : (
+                              <Eye className="w-3 h-3" />
+                            )}
+                          </button>
+                          <button
+                            onClick={() => setDeleteImageId(image.id)}
+                            aria-label="Delete image"
+                            className="h-7 w-7 rounded-full bg-red-600 text-white flex items-center justify-center"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </div>
+
                         {/* Status pill */}
                         {!image.is_published && (
                           <span className="absolute top-2 left-2 bg-ink/80 text-cream text-[10px] px-2 py-0.5 rounded">
@@ -504,7 +540,7 @@ export default function GalleryAdminClient({ albums, images }: Props) {
         open={!!deleteAlbumId}
         onOpenChange={(o) => !o && setDeleteAlbumId(null)}
       >
-        <AlertDialogContent>
+        <AlertDialogContent className="max-w-[calc(100vw-2rem)] sm:max-w-lg">
           <AlertDialogHeader>
             <AlertDialogTitle>Delete this album?</AlertDialogTitle>
             <AlertDialogDescription>
@@ -512,11 +548,13 @@ export default function GalleryAdminClient({ albums, images }: Props) {
               undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0">
+            <AlertDialogCancel className="w-full sm:w-auto mt-0">
+              Cancel
+            </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteAlbum}
-              className="bg-red-600 hover:bg-red-700 text-white"
+              className="bg-red-600 hover:bg-red-700 text-white w-full sm:w-auto"
             >
               Delete
             </AlertDialogAction>
@@ -529,18 +567,20 @@ export default function GalleryAdminClient({ albums, images }: Props) {
         open={!!deleteImageId}
         onOpenChange={(o) => !o && setDeleteImageId(null)}
       >
-        <AlertDialogContent>
+        <AlertDialogContent className="max-w-[calc(100vw-2rem)] sm:max-w-lg">
           <AlertDialogHeader>
             <AlertDialogTitle>Delete this image?</AlertDialogTitle>
             <AlertDialogDescription>
               This cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0">
+            <AlertDialogCancel className="w-full sm:w-auto mt-0">
+              Cancel
+            </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteImage}
-              className="bg-red-600 hover:bg-red-700 text-white"
+              className="bg-red-600 hover:bg-red-700 text-white w-full sm:w-auto"
             >
               Delete
             </AlertDialogAction>
@@ -564,12 +604,10 @@ function BulkImageAdder({
   const [urls, setUrls] = useState<string[]>([]);
 
   const handleChange = (next: string[]) => {
-    // Find newly added URLs
     const added = next.filter((u) => !urls.includes(u));
     setUrls(next);
     if (added.length > 0) {
       onAdd(added);
-      // Clear after adding
       setTimeout(() => setUrls([]), 100);
     }
   };

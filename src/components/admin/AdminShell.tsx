@@ -39,10 +39,10 @@ export default function AdminShell({ email, fullName, children }: Props) {
           <AdminSidebar onNavigate={() => setMobileOpen(false)} />
           <button
             onClick={() => setMobileOpen(false)}
-            className="absolute top-4 -right-10 p-2 text-white"
+            className="absolute top-4 right-1 p-2 text-red-500"
             aria-label="Close sidebar"
           >
-            <X className="w-5 h-5" />
+            <X className="w-5 h-5 " />
           </button>
         </div>
       </div>

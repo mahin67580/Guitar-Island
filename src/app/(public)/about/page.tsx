@@ -62,7 +62,7 @@ export default function AboutPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div className="relative aspect-square rounded-2xl overflow-hidden bg-cream/50">
             <Image
-              src="https://images.unsplash.com/photo-1510915361894-db8b60106cb1?w=800&q=80"
+              src="/shop.jpg"
               alt="Guitar Island shop"
               fill
               sizes="(max-width: 1024px) 100vw, 50vw"
@@ -93,6 +93,70 @@ export default function AboutPage() {
           </div>
         </div>
       </section>
+
+
+    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
+  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
+    {/* Text — on left on desktop, below on mobile */}
+    <div className="order-2 lg:order-1">
+      <h2 className="font-display text-3xl md:text-4xl text-ink mb-6">
+        Meet Mukit
+      </h2>
+
+      <p className="text-ink/70 leading-relaxed mb-4">
+        Mukit started Guitar Island because he was tired of walking into guitar
+        shops that felt like warehouses. He wanted a place where you could sit
+        down, plug in, and actually <em>hear</em> an instrument before you
+        commit — the way he learned to play himself.
+      </p>
+
+      <p className="text-ink/70 leading-relaxed mb-4">
+        He's a musician first and a shopkeeper second. Every guitar on the wall
+        has been in his hands. Every setup on the bench is his own work. He
+        knows which necks feel right for small hands, which amps flatter a
+        beginner's first chords, and which guitars are worth stretching your
+        budget for.
+      </p>
+
+      <p className="text-ink/70 leading-relaxed mb-4">
+        What he cares about most is that you leave with the <em>right</em>
+        instrument — not the most expensive one. Whether it's your first
+        ukulele or your fifteenth electric, you'll get the same honest answer,
+        the same patient demo, and the same enthusiasm he'd want if he were
+        the one buying.
+      </p>
+
+      <p className="text-ink/70 leading-relaxed mb-4">
+        When he's not behind the counter, he's usually out chasing waterfalls,
+        exploring the hills, or playing something acoustic under the open sky.
+        That love of sound — and of the places it takes you — is what Guitar
+        Island is really built on.
+      </p>
+
+      <p className="text-ink/70 leading-relaxed">
+        Drop by, say hi, and let him help you find the sound you've been
+        chasing.
+      </p>
+
+      <p className="mt-6 text-sm text-ink/50 italic">
+        Mukit Mazumder · Founder &amp; Owner
+      </p>
+    </div>
+
+    {/* Image — on right on desktop, above on mobile */}
+    <div className="order-1 lg:order-2">
+      <div className="relative aspect-[4/5] sm:aspect-[3/4] lg:aspect-[4/5] rounded-3xl overflow-hidden bg-cream/50">
+        <Image
+          src="/mukit.jpg"
+          alt="Mukit Mazumder — Founder of Guitar Island"
+          fill
+          sizes="(max-width: 1024px) 100vw, 50vw"
+          className="object-cover object-[85%_center]"
+        />
+      </div>
+    </div>
+  </div>
+</section>
 
       {/* Values */}
       <section className="bg-cream/40 py-20">

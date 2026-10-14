@@ -120,7 +120,7 @@ export default function CategoriesClient({ categories }: Props) {
       {!showForm && (
         <Button
           onClick={startCreate}
-          className="bg-brass hover:bg-brass/90 text-ink font-semibold"
+          className="bg-brass hover:bg-brass/90 text-ink font-semibold w-full sm:w-auto"
         >
           <Plus className="w-4 h-4 mr-2" />
           Add Category
@@ -129,11 +129,16 @@ export default function CategoriesClient({ categories }: Props) {
 
       {showForm && (
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="font-display">
+          <CardHeader className="flex flex-row items-start sm:items-center justify-between gap-2">
+            <CardTitle className="font-display text-xl sm:text-2xl">
               {editing ? "Edit Category" : "New Category"}
             </CardTitle>
-            <Button variant="ghost" size="icon" onClick={cancel}>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={cancel}
+              className="shrink-0 -mt-1 sm:mt-0"
+            >
               <X className="w-4 h-4" />
             </Button>
           </CardHeader>
@@ -199,18 +204,18 @@ export default function CategoriesClient({ categories }: Props) {
                       sort_order: Number(e.target.value),
                     })
                   }
-                  className="max-w-[140px]"
+                  className="w-full max-w-none sm:max-w-[140px]"
                 />
                 <p className="text-xs text-ink/50 mt-1">
                   Lower numbers appear first
                 </p>
               </div>
 
-              <div className="flex gap-3">
+              <div className="flex flex-col sm:flex-row gap-3">
                 <Button
                   type="submit"
                   disabled={submitting}
-                  className="bg-brass hover:bg-brass/90 text-ink font-semibold"
+                  className="bg-brass hover:bg-brass/90 text-ink font-semibold w-full sm:w-auto justify-center"
                 >
                   {submitting ? (
                     <>
@@ -224,7 +229,12 @@ export default function CategoriesClient({ categories }: Props) {
                     </>
                   )}
                 </Button>
-                <Button type="button" variant="ghost" onClick={cancel}>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={cancel}
+                  className="w-full sm:w-auto justify-center"
+                >
                   Cancel
                 </Button>
               </div>
@@ -236,8 +246,8 @@ export default function CategoriesClient({ categories }: Props) {
       {/* Category list */}
       <div className="space-y-3">
         {categories.length === 0 && !showForm && (
-          <div className="text-center py-16 rounded-xl bg-cream/50">
-            <p className="text-ink/60">
+          <div className="text-center py-16 px-4 rounded-xl bg-cream/50">
+            <p className="text-ink/60 text-sm sm:text-base">
               No categories yet. Add your first one to organize products.
             </p>
           </div>
@@ -246,37 +256,67 @@ export default function CategoriesClient({ categories }: Props) {
         {categories.map((cat) => (
           <div
             key={cat.id}
-            className="flex items-center gap-4 p-4 rounded-xl border border-black/5 bg-white"
+            className="flex items-start sm:items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl border border-black/5 bg-white"
           >
-            <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-cream/50 border border-black/5 shrink-0">
+            {/* Image */}
+            <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-lg overflow-hidden bg-cream/50 border border-black/5 shrink-0">
               {cat.image_url ? (
                 <Image
                   src={cat.image_url}
                   alt={cat.name}
                   fill
-                  sizes="64px"
+                  sizes="(max-width: 640px) 56px, 64px"
                   className="object-cover"
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-ink/20">
-                  <ImageIcon className="w-6 h-6" />
+                  <ImageIcon className="w-5 h-5 sm:w-6 sm:h-6" />
                 </div>
               )}
             </div>
 
+            {/* Info */}
             <div className="flex-1 min-w-0">
-              <p className="font-medium text-ink">{cat.name}</p>
-              <p className="text-xs text-ink/50">
-                /{cat.slug} · order: {cat.sort_order}
-              </p>
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0 flex-1">
+                  <p className="font-medium text-ink text-sm sm:text-base truncate">
+                    {cat.name}
+                  </p>
+                  <p className="text-xs text-ink/50 truncate">
+                    /{cat.slug} · order: {cat.sort_order}
+                  </p>
+                </div>
+
+                {/* Actions — pinned top-right on mobile, inline on desktop */}
+                <div className="flex gap-1 shrink-0 sm:hidden">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => startEdit(cat)}
+                  >
+                    <Edit className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+                    onClick={() => setDeleteId(cat.id)}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+
               {cat.description && (
-                <p className="text-sm text-ink/60 line-clamp-1 mt-1">
+                <p className="text-xs sm:text-sm text-ink/60 line-clamp-2 sm:line-clamp-1 mt-1">
                   {cat.description}
                 </p>
               )}
             </div>
 
-            <div className="flex gap-1">
+            {/* Actions — desktop only, inline at right */}
+            <div className="hidden sm:flex gap-1 shrink-0">
               <Button
                 variant="ghost"
                 size="icon"
@@ -299,7 +339,7 @@ export default function CategoriesClient({ categories }: Props) {
 
       {/* Delete confirm */}
       <AlertDialog open={!!deleteId} onOpenChange={(o) => !o && setDeleteId(null)}>
-        <AlertDialogContent>
+        <AlertDialogContent className="max-w-[calc(100vw-2rem)] sm:max-w-lg">
           <AlertDialogHeader>
             <AlertDialogTitle>Delete this category?</AlertDialogTitle>
             <AlertDialogDescription>
@@ -307,11 +347,13 @@ export default function CategoriesClient({ categories }: Props) {
               become uncategorized. This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0">
+            <AlertDialogCancel className="w-full sm:w-auto mt-0">
+              Cancel
+            </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
-              className="bg-red-600 hover:bg-red-700 text-white"
+              className="bg-red-600 hover:bg-red-700 text-white w-full sm:w-auto"
             >
               Delete
             </AlertDialogAction>

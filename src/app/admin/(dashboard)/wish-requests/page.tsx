@@ -18,7 +18,7 @@ export default async function AdminWishesPage() {
       <div>
         <h1 className="font-display text-3xl text-ink">Wish Requests</h1>
         <p className="text-ink/60 text-sm">
-          Customers asking for guitars not in your catalogue.
+          Customers asking for products not in your catalogue.
         </p>
       </div>
       <WishRequestsClient wishes={(data as WishRequest[]) || []} />
