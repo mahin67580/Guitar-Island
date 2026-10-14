@@ -16,13 +16,11 @@ async function ShopContent({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams;
   const supabase = await createClient();
 
-  // Fetch categories for the sidebar
   const { data: categories } = await supabase
     .from("categories")
     .select("*")
     .order("sort_order", { ascending: true });
 
-  // Build the products query
   let query = supabase
     .from("products")
     .select("*, category:categories(id, name, slug)")
@@ -67,10 +65,9 @@ async function ShopContent({ searchParams }: { searchParams: SearchParams }) {
   const list = (products as Product[]) || [];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10   mt-15">
-      {/* Page header */}
-      <div className="mb-10">
-        <h1 className="font-display text-4xl md:text-5xl text-ink mb-2">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 pt-28 md:pt-32">
+      <div className="mb-8 lg:mb-10">
+        <h1 className="font-display text-3xl sm:text-4xl md:text-5xl text-ink mb-2">
           Shop All Products
         </h1>
         <p className="text-ink/60">
@@ -80,7 +77,7 @@ async function ShopContent({ searchParams }: { searchParams: SearchParams }) {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-8">
-        {/* Sidebar */}
+        {/* Sidebar (mobile: collapsible, desktop: always visible) */}
         <div className="lg:sticky lg:top-24 lg:self-start">
           <ShopFilters categories={(categories as Category[]) || []} />
         </div>
@@ -90,7 +87,7 @@ async function ShopContent({ searchParams }: { searchParams: SearchParams }) {
           {list.length === 0 ? (
             <div className="text-center py-24 rounded-2xl bg-cream/50">
               <p className="font-display text-2xl text-ink mb-2">
-                No guitars found
+                No products found
               </p>
               <p className="text-ink/60">
                 Try adjusting your filters or search terms.
