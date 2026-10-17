@@ -3,16 +3,18 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Guitar, Heart, Menu, Phone, X } from "lucide-react";
+import { Guitar, Heart, Menu, Phone, X, PackageSearch } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import type { StoreSettings } from "@/lib/settings";
+import { ShoppingCart } from "lucide-react";
+import { useCart } from "@/hooks/useCart";
 
 const NAV_LINKS = [
   { href: "/", label: "Home" },
   { href: "/shop", label: "Shop" },
   { href: "/upcoming", label: "Upcoming" },
-    { href: "/gallery", label: "Gallery" },
+  { href: "/gallery", label: "Gallery" },
   { href: "/blog", label: "Blog" },
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },
@@ -25,6 +27,7 @@ export default function Navbar({ settings }: Props) {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const [wishlistCount, setWishlistCount] = useState(0);
+  const { itemCount } = useCart();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
@@ -128,6 +131,29 @@ export default function Navbar({ settings }: Props) {
               )}
             </Link>
 
+            {/* Track Order */}
+            <Link
+              href="/track/latest"
+              className="p-2 text-cream/90 hover:text-brass transition-colors hidden md:block"
+              title="Track your order"
+            >
+              <PackageSearch className="w-5 h-5" />
+            </Link>
+
+            {/* Cart */}
+            <Link
+              href="/cart"
+              className="relative p-2 text-cream/90 hover:text-brass transition-colors"
+              aria-label="Shopping cart"
+            >
+              <ShoppingCart className="w-5 h-5" />
+              {itemCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 bg-brass text-ink text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                  {itemCount > 99 ? "99+" : itemCount}
+                </span>
+              )}
+            </Link>
+
             <Button
               asChild
               size="sm"
@@ -181,6 +207,23 @@ export default function Navbar({ settings }: Props) {
             <Heart className="w-4 h-4" />
             Wishlist {wishlistCount > 0 && `(${wishlistCount})`}
           </Link>
+
+          <Link
+            href="/track/latest"
+            className="px-4 py-3 rounded-md text-base font-medium text-cream/90 hover:text-brass hover:bg-white/5 flex items-center gap-2"
+          >
+            <PackageSearch className="w-4 h-4" />
+            Track Order
+          </Link>
+
+          <Link
+            href="/cart"
+            className="px-4 py-3 rounded-md text-base font-medium text-cream/90 hover:text-brass hover:bg-white/5 flex items-center gap-2"
+          >
+            <ShoppingCart className="w-4 h-4" />
+            Cart {itemCount > 0 && `(${itemCount})`}
+          </Link>
+
           <a
             href={whatsappHref}
             target="_blank"

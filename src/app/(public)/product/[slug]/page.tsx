@@ -12,6 +12,8 @@ import ProductCard from "@/components/public/ProductCard";
 import SectionHeading from "@/components/public/SectionHeading";
 import type { Product } from "@/lib/types";
 import ProductGallery from "@/components/public/ProductGallery";
+import AddToCartButton from "@/components/public/cart/AddToCartButton";
+import BuyNowButton from "@/components/public/cart/BuyNowButton";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -65,11 +67,11 @@ export default async function ProductPage({ params }: Props) {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 mb-20">
         {/* Image gallery */}
-       <ProductGallery
-  images={p.images || []}
-  alt={p.name}
-  isSoldOut={isSoldOut}
-/>
+        <ProductGallery
+          images={p.images || []}
+          alt={p.name}
+          isSoldOut={isSoldOut}
+        />
 
         {/* Info */}
         <div>
@@ -123,25 +125,51 @@ export default async function ProductPage({ params }: Props) {
 
           {/* CTAs */}
           <div className="space-y-3 mb-8">
-            <EnquiryDialog productId={p.id} productName={p.name} />
+            {/* Primary CTAs — cart & buy now */}
+            {!isSoldOut && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <AddToCartButton
+                  productId={p.id}
+                  name={p.name}
+                  slug={p.slug}
+                  brand={p.brand ?? null}
+                  image={p.images?.[0] ?? null}
+                  unitPrice={hasDiscount ? discountPrice! : price}
+                  maxQuantity={p.quantity}
+                />
+                <BuyNowButton
+                  productId={p.id}
+                  name={p.name}
+                  slug={p.slug}
+                  brand={p.brand ?? null}
+                  image={p.images?.[0] ?? null}
+                  unitPrice={hasDiscount ? discountPrice! : price}
+                  maxQuantity={p.quantity}
+                />
+              </div>
+            )}
+
+            {/* Secondary CTAs */}
             <div className="flex flex-col sm:flex-row gap-3">
               <WishlistButton productId={p.id} productName={p.name} />
-              <Button
-                asChild
-                variant="outline"
-                size="lg"
-                className="w-full sm:w-auto"
-              >
-                <a
-                  href={whatsappHref}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
+              <Button asChild variant="outline" size="lg" className="w-full sm:w-auto">
+                <a href={whatsappHref} target="_blank" rel="noopener noreferrer">
                   <Share2 className="w-5 h-5 mr-2" />
                   Ask on WhatsApp
                 </a>
               </Button>
             </div>
+
+            {/* Enquire — moved below, more subtle */}
+            {isSoldOut && (
+              <div className="pt-2">
+                <p className="text-sm text-ink/60 mb-3">
+                  This guitar is currently sold out. Send us an enquiry and we'll let
+                  you know when it&apos;s back.
+                </p>
+                <EnquiryDialog productId={p.id} productName={p.name} />
+              </div>
+            )}
           </div>
 
           <Separator className="my-8" />

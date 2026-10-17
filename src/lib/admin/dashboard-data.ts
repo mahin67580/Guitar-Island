@@ -12,6 +12,11 @@ export type DashboardData = {
     unreadMessages: number;
     todayEnquiries: number;
     weekEnquiries: number;
+    todayOrders: number;
+    monthRevenue: number;
+    pendingOrders: number;
+    deliveredOrders: number;
+    totalOrders: number;
   };
   enquiryTrend: { date: string; count: number }[];
   enquiriesByStatus: { status: string; count: number }[];
@@ -24,6 +29,19 @@ export type DashboardData = {
     detail: string;
     created_at: string;
   }[];
+
+  orderRevenueTrend: { date: string; revenue: number; count: number }[];
+  topSellingProducts: { name: string; quantity: number; revenue: number }[];
+  recentOrders: {
+    id: string;
+    order_number: string;
+    customer_name: string;
+    total: number;
+    status: string;
+    payment_method: string;
+    created_at: string;
+  }[];
+
 };
 
 export async function getDashboardData(): Promise<DashboardData> {
@@ -47,6 +65,9 @@ export async function getDashboardData(): Promise<DashboardData> {
     recentWishesRes,
     recentMessagesRes,
     enquiryProductsRes,
+    allOrdersRes,
+    recentOrdersRes,
+    orderItemsRes,
   ] = await Promise.all([
     supabase.from("products").select("id, quantity, price, discount_price"),
     supabase.from("enquiries").select("id, status, created_at"),
@@ -80,22 +101,42 @@ export async function getDashboardData(): Promise<DashboardData> {
       .from("enquiries")
       .select("product_id, product_name")
       .not("product_id", "is", null),
+    // NEW: All orders (for stats + revenue trend)
+    supabase
+      .from("orders")
+      .select("id, order_number, customer_name, total, status, payment_method, created_at")
+      .order("created_at", { ascending: false }),
+
+    // NEW: Recent orders (last 5)
+    supabase
+      .from("orders")
+      .select("id, order_number, customer_name, total, status, payment_method, created_at")
+      .order("created_at", { ascending: false })
+      .limit(5),
+
+    // NEW: Order items (for top-selling calculation)
+    supabase
+      .from("order_items")
+      .select("product_id, product_name, quantity, subtotal"),
   ]);
 
   const products = productsRes.data || [];
   const enquiries = enquiriesRes.data || [];
   const categories = categoriesRes.data || [];
+  const orders = allOrdersRes.data || [];
+  const recentOrders = recentOrdersRes.data || [];
+  const orderItems = orderItemsRes.data || [];
 
   // Products stats
   const totalProducts = products.length;
   const totalStock = products.reduce((sum, p) => sum + (p.quantity || 0), 0);
-const inventoryValue = products.reduce((sum, p) => {
-  const price = Number(p.price) || 0;
-  const discount = p.discount_price ? Number(p.discount_price) : null;
-  const effectivePrice =
-    discount !== null && discount > 0 && discount < price ? discount : price;
-  return sum + effectivePrice * (p.quantity || 0);
-}, 0);
+  const inventoryValue = products.reduce((sum, p) => {
+    const price = Number(p.price) || 0;
+    const discount = p.discount_price ? Number(p.discount_price) : null;
+    const effectivePrice =
+      discount !== null && discount > 0 && discount < price ? discount : price;
+    return sum + effectivePrice * (p.quantity || 0);
+  }, 0);
 
   // Enquiries stats
   const newEnquiries = enquiries.filter((e) => e.status === "new").length;
@@ -105,6 +146,75 @@ const inventoryValue = products.reduce((sum, p) => {
   const weekEnquiries = enquiries.filter(
     (e) => new Date(e.created_at) >= weekAgo
   ).length;
+
+  // ─── NEW: Order stats ───
+  const todayOrders = orders.filter(
+    (o) => new Date(o.created_at) >= todayStart
+  ).length;
+  const totalOrders = orders.length;
+  const pendingOrders = orders.filter((o) =>
+    ["new", "confirmed", "shipped"].includes(o.status)
+  ).length;
+  const deliveredOrders = orders.filter(
+    (o) => o.status === "delivered"
+  ).length;
+
+  // Revenue this month (delivered orders only — money actually collected)
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const monthRevenue = orders
+    .filter(
+      (o) =>
+        o.status === "delivered" &&
+        new Date(o.created_at) >= monthStart
+    )
+    .reduce((sum, o) => sum + (Number(o.total) || 0), 0);
+
+  // ─── NEW: Revenue trend (last 30 days) ───
+  const revenueMap = new Map<string, { revenue: number; count: number }>();
+  for (let i = 29; i >= 0; i--) {
+    const d = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+    const key = d.toISOString().slice(0, 10);
+    revenueMap.set(key, { revenue: 0, count: 0 });
+  }
+  orders
+    .filter((o) => new Date(o.created_at) >= thirtyDaysAgo)
+    .forEach((o) => {
+      const key = new Date(o.created_at).toISOString().slice(0, 10);
+      const existing = revenueMap.get(key);
+      if (existing) {
+        // Count all orders but only count revenue from delivered
+        existing.count += 1;
+        if (o.status === "delivered") {
+          existing.revenue += Number(o.total) || 0;
+        }
+      }
+    });
+  const orderRevenueTrend = Array.from(revenueMap.entries()).map(
+    ([date, { revenue, count }]) => ({ date, revenue, count })
+  );
+
+  // ─── NEW: Top selling products (by quantity) ───
+  const salesMap = new Map<
+    string,
+    { name: string; quantity: number; revenue: number }
+  >();
+  orderItems.forEach((item) => {
+    const key = item.product_id || item.product_name;
+    const existing = salesMap.get(key);
+    if (existing) {
+      existing.quantity += item.quantity || 0;
+      existing.revenue += Number(item.subtotal) || 0;
+    } else {
+      salesMap.set(key, {
+        name: item.product_name,
+        quantity: item.quantity || 0,
+        revenue: Number(item.subtotal) || 0,
+      });
+    }
+  });
+  const topSellingProducts = Array.from(salesMap.values())
+    .sort((a, b) => b.quantity - a.quantity)
+    .slice(0, 5);
 
   // Enquiry trend (last 30 days)
   const trendMap = new Map<string, number>();
@@ -218,11 +328,20 @@ const inventoryValue = products.reduce((sum, p) => {
       unreadMessages: messagesRes.count || 0,
       todayEnquiries,
       weekEnquiries,
+       todayOrders,
+      monthRevenue,
+      pendingOrders,
+      deliveredOrders,
+      totalOrders,
     },
     enquiryTrend,
     enquiriesByStatus,
     productsByCategory: productsByCategoryReal,
     topProducts,
     recentActivity: activity.slice(0, 12),
+     // ─── NEW ───
+    orderRevenueTrend,
+    topSellingProducts,
+    recentOrders,
   };
 }

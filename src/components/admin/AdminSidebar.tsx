@@ -19,6 +19,7 @@ import {
   Mail,
   Settings,
   Images,
+  ShoppingBag,
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -28,6 +29,7 @@ const NAV_SECTIONS = [
     label: "Overview",
     items: [
       { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
+      { href: "/admin/orders", label: "Orders", icon: ShoppingBag },
     ],
   },
   {
@@ -72,45 +74,76 @@ export default function AdminSidebar({ onNavigate }: Props) {
 
   const [newEnquiries, setNewEnquiries] = useState<number>(0);
 
- useEffect(() => {
-  let cancelled = false;
-  const supabase = createClient();
+  useEffect(() => {
+    let cancelled = false;
+    const supabase = createClient();
 
-  const fetchCount = async () => {
-    const { count } = await supabase
-      .from("enquiries")
-      .select("*", { count: "exact", head: true })
-      .eq("status", "new");
-    if (!cancelled) setNewEnquiries(count ?? 0);
-  };
+    const fetchCount = async () => {
+      const { count } = await supabase
+        .from("enquiries")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "new");
+      if (!cancelled) setNewEnquiries(count ?? 0);
+    };
 
-  fetchCount();
+    fetchCount();
 
-  const channelName = `sidebar-enquiries-${Date.now()}-${Math.random()
-    .toString(36)
-    .slice(2, 8)}`;
+    const channelName = `sidebar-enquiries-${Date.now()}-${Math.random()
+      .toString(36)
+      .slice(2, 8)}`;
 
-  const channel = supabase
-    .channel(channelName)
-    .on(
-      "postgres_changes",
-      { event: "*", schema: "public", table: "enquiries" },
-      () => fetchCount()
-    )
-    .subscribe();
+    const channel = supabase
+      .channel(channelName)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "enquiries" },
+        () => fetchCount()
+      )
+      .subscribe();
 
-  // Polling fallback
-  const interval = setInterval(fetchCount, 30000);
+    // Polling fallback
+    const interval = setInterval(fetchCount, 30000);
 
-  return () => {
-    cancelled = true;
-    clearInterval(interval);
-    supabase.removeChannel(channel);
-  };
-}, []);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
 
+  const [newOrders, setNewOrders] = useState<number>(0);
 
+  useEffect(() => {
+    const supabase = createClient();
+    const fetchCount = async () => {
+      const { count } = await supabase
+        .from("orders")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "new");
+      setNewOrders(count ?? 0);
+    };
+    fetchCount();
+
+    const channelName = `sidebar-orders-${Date.now()}-${Math.random()
+      .toString(36)
+      .slice(2, 8)}`;
+    const channel = supabase
+      .channel(channelName)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "orders" },
+        () => fetchCount()
+      )
+      .subscribe();
+
+    const interval = setInterval(fetchCount, 30000);
+
+    return () => {
+      clearInterval(interval);
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
 
   return (
@@ -147,7 +180,7 @@ export default function AdminSidebar({ onNavigate }: Props) {
                     ? pathname === "/admin"
                     : pathname.startsWith(href);
                 return (
-                                    <Link
+                  <Link
                     key={href}
                     href={href}
                     onClick={onNavigate}
@@ -167,6 +200,13 @@ export default function AdminSidebar({ onNavigate }: Props) {
                         {newEnquiries > 99 ? "99+" : newEnquiries}
                       </span>
                     )}
+
+                    {href === "/admin/orders" && newOrders > 0 && (
+                      <span className="bg-retro text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] px-1.5 flex items-center justify-center">
+                        {newOrders > 99 ? "99+" : newOrders}
+                      </span>
+                    )}
+
                   </Link>
                 );
               })}
